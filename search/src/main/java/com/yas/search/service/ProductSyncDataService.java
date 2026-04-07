@@ -56,7 +56,7 @@ public class ProductSyncDataService {
         product.setAttributes(productEsDetailVm.attributes());
         productRepository.save(product);
     }
-
+//test
     public void createProduct(Long id) {
         ProductEsDetailVm productEsDetailVm = getProductEsDetailById(id);
 
