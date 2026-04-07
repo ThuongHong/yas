@@ -24,7 +24,7 @@ pipeline {
 			when {
 				anyOf {
 					changeset 'backoffice-bff/**'
-					changeset 'pom.xml'
+					// changeset 'pom.xml'
 				}
 			}
 			stages {
@@ -58,7 +58,7 @@ pipeline {
 			when {
 				anyOf {
 					changeset 'cart/**'
-					changeset 'pom.xml'
+					// changeset 'pom.xml'
 				}
 			}
 			stages {
@@ -92,7 +92,7 @@ pipeline {
 			when {
 				anyOf {
 					changeset 'customer/**'
-					changeset 'pom.xml'
+					// changeset 'pom.xml'
 				}
 			}
 			stages {
@@ -126,7 +126,7 @@ pipeline {
 			when {
 				anyOf {
 					changeset 'inventory/**'
-					changeset 'pom.xml'
+					// changeset 'pom.xml'
 				}
 			}
 			stages {
@@ -160,7 +160,7 @@ pipeline {
 			when {
 				anyOf {
 					changeset 'location/**'
-					changeset 'pom.xml'
+					// changeset 'pom.xml'
 				}
 			}
 			stages {
@@ -194,7 +194,7 @@ pipeline {
 			when {
 				anyOf {
 					changeset 'media/**'
-					changeset 'pom.xml'
+					// changeset 'pom.xml'
 				}
 			}
 			stages {
@@ -228,7 +228,7 @@ pipeline {
 			when {
 				anyOf {
 					changeset 'order/**'
-					changeset 'pom.xml'
+					// changeset 'pom.xml'
 				}
 			}
 			stages {
@@ -262,7 +262,7 @@ pipeline {
 			when {
 				anyOf {
 					changeset 'payment/**'
-					changeset 'pom.xml'
+					// changeset 'pom.xml'
 				}
 			}
 			stages {
@@ -296,7 +296,7 @@ pipeline {
 			when {
 				anyOf {
 					changeset 'payment-paypal/**'
-					changeset 'pom.xml'
+					// changeset 'pom.xml'
 				}
 			}
 			stages {
@@ -330,7 +330,7 @@ pipeline {
 			when {
 				anyOf {
 					changeset 'product/**'
-					changeset 'pom.xml'
+					// changeset 'pom.xml'
 				}
 			}
 			stages {
@@ -364,7 +364,7 @@ pipeline {
 			when {
 				anyOf {
 					changeset 'promotion/**'
-					changeset 'pom.xml'
+					// changeset 'pom.xml'
 				}
 			}
 			stages {
@@ -398,7 +398,7 @@ pipeline {
 			when {
 				anyOf {
 					changeset 'rating/**'
-					changeset 'pom.xml'
+					// changeset 'pom.xml'
 				}
 			}
 			stages {
@@ -432,7 +432,7 @@ pipeline {
 			when {
 				anyOf {
 					changeset 'recommendation/**'
-					changeset 'pom.xml'
+					// changeset 'pom.xml'
 				}
 			}
 			stages {
@@ -466,7 +466,7 @@ pipeline {
 			when {
 				anyOf {
 					changeset 'sampledata/**'
-					changeset 'pom.xml'
+					// changeset 'pom.xml'
 				}
 			}
 			stages {
@@ -500,7 +500,7 @@ pipeline {
 			when {
 				anyOf {
 					changeset 'search/**'
-					changeset 'pom.xml'
+					// changeset 'pom.xml'
 				}
 			}
 			stages {
@@ -534,7 +534,7 @@ pipeline {
 			when {
 				anyOf {
 					changeset 'storefront-bff/**'
-					changeset 'pom.xml'
+					// changeset 'pom.xml'
 				}
 			}
 			stages {
@@ -568,7 +568,7 @@ pipeline {
 			when {
 				anyOf {
 					changeset 'tax/**'
-					changeset 'pom.xml'
+					// changeset 'pom.xml'
 				}
 			}
 			stages {
@@ -602,7 +602,7 @@ pipeline {
 			when {
 				anyOf {
 					changeset 'webhook/**'
-					changeset 'pom.xml'
+					// changeset 'pom.xml'
 				}
 			}
 			stages {
