@@ -13,6 +13,7 @@ pipeline {
         stage('Initialize & Clean') {
             steps {
                 cleanWs()
+                checkout scm
                 echo 'Workspace cleaned and initialized.'
             }
         }
