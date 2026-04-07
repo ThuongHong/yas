@@ -13,10 +13,10 @@ pipeline {
         stage('Global Dependencies Setup') {
             steps {
                 echo 'Installing Root POM...'
-                sh 'mvn clean install -N'
+                sh 'mvn clean install -N -U'
 
                 echo 'Building Common Library (Global Dependency)...'
-                sh 'mvn clean install -DskipTests -f common-library'
+                sh 'mvn clean install -DskipTests -f common-library -U'
             }
         }
 
