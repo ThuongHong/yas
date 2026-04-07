@@ -510,12 +510,28 @@ pipeline {
 						sh 'mvn clean install -DskipTests -pl search -am'
 					}
 				}
-				stage('Test Search') {
-					steps {
-						echo 'Running Search Tests...'
-						sh 'mvn test -pl search -am'
-					}
-				}
+				// stage('Test Search') {
+				// 	steps {
+				// 		echo 'Running Search Tests...'
+				// 		sh 'mvn test -pl search -am'
+				// 	}
+				// }
+                stage('Test Search') {
+                    steps {
+                        script {
+                            def dockerGateway = sh(script: "ip route | grep default | awk '{print \$3}'", returnStdout: true).trim()
+                            
+                            echo "Detected Docker Gateway: ${dockerGateway}"
+
+                            withEnv([
+                                "TESTCONTAINERS_HOST_OVERRIDE=${dockerGateway}",
+                                "SPRING_ELASTICSEARCH_URIS=http://${dockerGateway}:9200"
+                            ]) {
+                                sh 'mvn clean test jacoco:report -pl search -am'
+                            }
+                        }
+                    }
+                }
 				stage('SonarQube Analysis Search') {
 					steps {
 						echo 'Running SonarQube Analysis for Search...'
