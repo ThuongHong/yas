@@ -513,8 +513,13 @@ pipeline {
 				stage('Test Search') {
 					steps {
 						echo 'Running Search Tests...'
-						sh 'mvn test -pl search -am'
+						sh 'mvn test jacoco:report -pl search -am'
 					}
+                    post {
+                    success {
+                        recordCoverage(tools: [[parser: 'JACOCO', pattern: 'search/target/site/jacoco/jacoco.xml']])
+                    }
+                }
 				}
 				stage('SonarQube Analysis Search') {
 					steps {
