@@ -16,7 +16,7 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.util.UriComponentsBuilder;
 
 @Service
-@Slf4j//testt
+@Slf4j//testtt
 @RequiredArgsConstructor
 public class OrderService extends AbstractCircuitBreakFallbackHandler {
 
