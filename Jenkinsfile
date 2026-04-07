@@ -10,6 +10,13 @@ pipeline {
 	}
 
 	stages {
+        stage('Build Common Library') {
+            steps {
+                echo 'Building Common Library (Global Dependency)...'
+                sh 'mvn clean install -DskipTests -f common-library'
+            }
+        }
+
 		stage('Pipeline Backoffice-BFF Service') {
 			when {
 				anyOf {
