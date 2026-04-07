@@ -583,7 +583,11 @@ pipeline {
 					}
                     post {
                     success {
-                        recordCoverage(tools: [[parser: 'JACOCO', pattern: 'search/target/site/jacoco/jacoco.xml']])
+                        // recordCoverage(tools: [[parser: 'JACOCO', pattern: 'search/target/site/jacoco/jacoco.xml']])
+                        recordCoverage(
+                            tools: [[parser: 'JACOCO', pattern: 'search/target/site/jacoco/jacoco.xml']],
+                            sourceDirectories: [[path: 'search/src/main/java']]
+                        )
                     }
                 }
 				}
