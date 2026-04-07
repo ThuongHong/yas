@@ -546,36 +546,36 @@ pipeline {
 		}
 
         post {
-        success {
-            echo 'Gom tất cả báo cáo Coverage...'
-            recordCoverage(
-                tools: [[parser: 'JACOCO', pattern: '**/target/site/jacoco/jacoco.xml']],
-                sourceDirectories: [
-                    [path: 'search/src/main/java'],
-                    [path: 'media/src/main/java'],
-                    [path: 'cart/src/main/java'],
-                    [path: 'customer/src/main/java'],
-                    [path: 'inventory/src/main/java'],
-                    [path: 'location/src/main/java'],
-                    [path: 'order/src/main/java'],
-                    [path: 'payment/src/main/java'],
-                    [path: 'payment-paypal/src/main/java'],
-                    [path: 'product/src/main/java'],
-                    [path: 'promotion/src/main/java'],
-                    [path: 'rating/src/main/java'],
-                    [path: 'recommendation/src/main/java'],
-                    [path: 'sampledata/src/main/java'],
-                    [path: 'storefront-bff/src/main/java'],
-                    [path: 'tax/src/main/java'],
-                    [path: 'webhook/src/main/java'],
-                    [path: 'backoffice-bff/src/main/java'],
-                    [path: 'common-library/src/main/java']
-                ]
-            )
+            success {
+                echo 'Gom tất cả báo cáo Coverage...'
+                recordCoverage(
+                    tools: [[parser: 'JACOCO', pattern: '**/target/site/jacoco/jacoco.xml']],
+                    sourceDirectories: [
+                        [path: 'search/src/main/java'],
+                        [path: 'media/src/main/java'],
+                        [path: 'cart/src/main/java'],
+                        [path: 'customer/src/main/java'],
+                        [path: 'inventory/src/main/java'],
+                        [path: 'location/src/main/java'],
+                        [path: 'order/src/main/java'],
+                        [path: 'payment/src/main/java'],
+                        [path: 'payment-paypal/src/main/java'],
+                        [path: 'product/src/main/java'],
+                        [path: 'promotion/src/main/java'],
+                        [path: 'rating/src/main/java'],
+                        [path: 'recommendation/src/main/java'],
+                        [path: 'sampledata/src/main/java'],
+                        [path: 'storefront-bff/src/main/java'],
+                        [path: 'tax/src/main/java'],
+                        [path: 'webhook/src/main/java'],
+                        [path: 'backoffice-bff/src/main/java'],
+                        [path: 'common-library/src/main/java']
+                    ]
+                )
+            }
+            always {
+                junit allowEmptyResults: true, testResults: '**/target/surefire-reports/*.xml'
+            }
         }
-        always {
-            junit allowEmptyResults: true, testResults: '**/target/surefire-reports/*.xml'
-        }
-    }
 	}
 }
