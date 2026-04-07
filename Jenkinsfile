@@ -10,15 +10,15 @@ pipeline {
 	}
 
 	stages {
-        stage('Global Dependencies Setup') {
-            steps {
-                echo 'Installing Root POM...'
-                sh 'mvn clean install -N -U'
+        // stage('Global Dependencies Setup') {
+        //     steps {
+        //         echo 'Installing Root POM...'
+        //         sh 'mvn clean install -N -U'
 
-                echo 'Building Common Library (Global Dependency)...'
-                sh 'mvn clean install -DskipTests -f common-library -U'
-            }
-        }
+        //         echo 'Building Common Library (Global Dependency)...'
+        //         sh 'mvn clean install -DskipTests -pl common-library -am -U'
+        //     }
+        // }
 
 		stage('Pipeline Backoffice-BFF Service') {
 			when {
@@ -31,19 +31,19 @@ pipeline {
 				stage('Build Backoffice-BFF') {
 					steps {
 						echo 'Building Backoffice-BFF Service...'
-						sh 'mvn clean install -DskipTests -f backoffice-bff'
+						sh 'mvn clean install -DskipTests -pl backoffice-bff -am'
 					}
 				}
 				stage('Test Backoffice-BFF') {
 					steps {
 						echo 'Running Backoffice-BFF Tests...'
-						sh 'mvn test -f backoffice-bff'
+						sh 'mvn test -pl backoffice-bff -am'
 					}
 				}
 				stage('SonarQube Analysis Backoffice-BFF') {
 					steps {
 						echo 'Running SonarQube Analysis for Backoffice-BFF...'
-						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -f backoffice-bff'
+						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl backoffice-bff -am'
 					}
 				}
 			}
@@ -65,19 +65,19 @@ pipeline {
 				stage('Build Cart') {
 					steps {
 						echo 'Building Cart Service...'
-						sh 'mvn clean install -DskipTests -f cart'
+						sh 'mvn clean install -DskipTests -pl cart -am'
 					}
 				}
 				stage('Test Cart') {
 					steps {
 						echo 'Running Cart Tests...'
-						sh 'mvn test -f cart'
+						sh 'mvn test -pl cart -am'
 					}
 				}
 				stage('SonarQube Analysis Cart') {
 					steps {
 						echo 'Running SonarQube Analysis for Cart...'
-						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -f cart'
+						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl cart -am'
 					}
 				}
 			}
@@ -99,19 +99,19 @@ pipeline {
 				stage('Build Customer') {
 					steps {
 						echo 'Building Customer Service...'
-						sh 'mvn clean install -DskipTests -f customer'
+						sh 'mvn clean install -DskipTests -pl customer -am'
 					}
 				}
 				stage('Test Customer') {
 					steps {
 						echo 'Running Customer Tests...'
-						sh 'mvn test -f customer'
+						sh 'mvn test -pl customer -am'
 					}
 				}
 				stage('SonarQube Analysis Customer') {
 					steps {
 						echo 'Running SonarQube Analysis for Customer...'
-						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -f customer'
+						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl customer -am'
 					}
 				}
 			}
@@ -133,19 +133,19 @@ pipeline {
 				stage('Build Inventory') {
 					steps {
 						echo 'Building Inventory Service...'
-						sh 'mvn clean install -DskipTests -f inventory'
+						sh 'mvn clean install -DskipTests -pl inventory -am'
 					}
 				}
 				stage('Test Inventory') {
 					steps {
 						echo 'Running Inventory Tests...'
-						sh 'mvn test -f inventory'
+						sh 'mvn test -pl inventory -am'
 					}
 				}
 				stage('SonarQube Analysis Inventory') {
 					steps {
 						echo 'Running SonarQube Analysis for Inventory...'
-						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -f inventory'
+						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl inventory -am'
 					}
 				}
 			}
@@ -167,19 +167,19 @@ pipeline {
 				stage('Build Location') {
 					steps {
 						echo 'Building Location Service...'
-						sh 'mvn clean install -DskipTests -f location'
+						sh 'mvn clean install -DskipTests -pl location -am'
 					}
 				}
 				stage('Test Location') {
 					steps {
 						echo 'Running Location Tests...'
-						sh 'mvn test -f location'
+						sh 'mvn test -pl location -am'
 					}
 				}
 				stage('SonarQube Analysis Location') {
 					steps {
 						echo 'Running SonarQube Analysis for Location...'
-						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -f location'
+						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl location -am'
 					}
 				}
 			}
@@ -201,19 +201,19 @@ pipeline {
 				stage('Build Media') {
 					steps {
 						echo 'Building Media Service...'
-						sh 'mvn clean install -DskipTests -f media'
+						sh 'mvn clean install -DskipTests -pl media -am'
 					}
 				}
 				stage('Test Media') {
 					steps {
 						echo 'Running Media Tests...'
-						sh 'mvn test -f media'
+						sh 'mvn test -pl media -am'
 					}
 				}
 				stage('SonarQube Analysis Media') {
 					steps {
 						echo 'Running SonarQube Analysis for Media...'
-						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -f media'
+						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl media -am'
 					}
 				}
 			}
@@ -235,19 +235,19 @@ pipeline {
 				stage('Build Order') {
 					steps {
 						echo 'Building Order Service...'
-						sh 'mvn clean install -DskipTests -f order'
+						sh 'mvn clean install -DskipTests -pl order -am'
 					}
 				}
 				stage('Test Order') {
 					steps {
 						echo 'Running Order Tests...'
-						sh 'mvn test -f order'
+						sh 'mvn test -pl order -am'
 					}
 				}
 				stage('SonarQube Analysis Order') {
 					steps {
 						echo 'Running SonarQube Analysis for Order...'
-						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -f order'
+						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl order -am'
 					}
 				}
 			}
@@ -269,19 +269,19 @@ pipeline {
 				stage('Build Payment') {
 					steps {
 						echo 'Building Payment Service...'
-						sh 'mvn clean install -DskipTests -f payment'
+						sh 'mvn clean install -DskipTests -pl payment -am'
 					}
 				}
 				stage('Test Payment') {
 					steps {
 						echo 'Running Payment Tests...'
-						sh 'mvn test -f payment'
+						sh 'mvn test -pl payment -am'
 					}
 				}
 				stage('SonarQube Analysis Payment') {
 					steps {
 						echo 'Running SonarQube Analysis for Payment...'
-						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -f payment'
+						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl payment -am'
 					}
 				}
 			}
@@ -303,19 +303,19 @@ pipeline {
 				stage('Build Payment-Paypal') {
 					steps {
 						echo 'Building Payment-Paypal Service...'
-						sh 'mvn clean install -DskipTests -f payment-paypal'
+						sh 'mvn clean install -DskipTests -pl payment-paypal -am'
 					}
 				}
 				stage('Test Payment-Paypal') {
 					steps {
 						echo 'Running Payment-Paypal Tests...'
-						sh 'mvn test -f payment-paypal'
+						sh 'mvn test -pl payment-paypal -am'
 					}
 				}
 				stage('SonarQube Analysis Payment-Paypal') {
 					steps {
 						echo 'Running SonarQube Analysis for Payment-Paypal...'
-						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -f payment-paypal'
+						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl payment-paypal -am'
 					}
 				}
 			}
@@ -337,19 +337,19 @@ pipeline {
 				stage('Build Product') {
 					steps {
 						echo 'Building Product Service...'
-						sh 'mvn clean install -DskipTests -f product'
+						sh 'mvn clean install -DskipTests -pl product -am'
 					}
 				}
 				stage('Test Product') {
 					steps {
 						echo 'Running Product Tests...'
-						sh 'mvn test -f product'
+						sh 'mvn test -pl product -am'
 					}
 				}
 				stage('SonarQube Analysis Product') {
 					steps {
 						echo 'Running SonarQube Analysis for Product...'
-						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -f product'
+						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl product -am'
 					}
 				}
 			}
@@ -371,19 +371,19 @@ pipeline {
 				stage('Build Promotion') {
 					steps {
 						echo 'Building Promotion Service...'
-						sh 'mvn clean install -DskipTests -f promotion'
+						sh 'mvn clean install -DskipTests -pl promotion -am'
 					}
 				}
 				stage('Test Promotion') {
 					steps {
 						echo 'Running Promotion Tests...'
-						sh 'mvn test -f promotion'
+						sh 'mvn test -pl promotion -am'
 					}
 				}
 				stage('SonarQube Analysis Promotion') {
 					steps {
 						echo 'Running SonarQube Analysis for Promotion...'
-						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -f promotion'
+						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl promotion -am'
 					}
 				}
 			}
@@ -405,19 +405,19 @@ pipeline {
 				stage('Build Rating') {
 					steps {
 						echo 'Building Rating Service...'
-						sh 'mvn clean install -DskipTests -f rating'
+						sh 'mvn clean install -DskipTests -pl rating -am'
 					}
 				}
 				stage('Test Rating') {
 					steps {
 						echo 'Running Rating Tests...'
-						sh 'mvn test -f rating'
+						sh 'mvn test -pl rating -am'
 					}
 				}
 				stage('SonarQube Analysis Rating') {
 					steps {
 						echo 'Running SonarQube Analysis for Rating...'
-						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -f rating'
+						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl rating -am'
 					}
 				}
 			}
@@ -439,19 +439,19 @@ pipeline {
 				stage('Build Recommendation') {
 					steps {
 						echo 'Building Recommendation Service...'
-						sh 'mvn clean install -DskipTests -f recommendation'
+						sh 'mvn clean install -DskipTests -pl recommendation -am'
 					}
 				}
 				stage('Test Recommendation') {
 					steps {
 						echo 'Running Recommendation Tests...'
-						sh 'mvn test -f recommendation'
+						sh 'mvn test -pl recommendation -am'
 					}
 				}
 				stage('SonarQube Analysis Recommendation') {
 					steps {
 						echo 'Running SonarQube Analysis for Recommendation...'
-						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -f recommendation'
+						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl recommendation -am'
 					}
 				}
 			}
@@ -473,19 +473,19 @@ pipeline {
 				stage('Build Sampledata') {
 					steps {
 						echo 'Building Sampledata Service...'
-						sh 'mvn clean install -DskipTests -f sampledata'
+						sh 'mvn clean install -DskipTests -pl sampledata -am'
 					}
 				}
 				stage('Test Sampledata') {
 					steps {
 						echo 'Running Sampledata Tests...'
-						sh 'mvn test -f sampledata'
+						sh 'mvn test -pl sampledata -am'
 					}
 				}
 				stage('SonarQube Analysis Sampledata') {
 					steps {
 						echo 'Running SonarQube Analysis for Sampledata...'
-						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -f sampledata'
+						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl sampledata -am'
 					}
 				}
 			}
@@ -507,19 +507,19 @@ pipeline {
 				stage('Build Search') {
 					steps {
 						echo 'Building Search Service...'
-						sh 'mvn clean install -DskipTests -f search'
+						sh 'mvn clean install -DskipTests -pl search -am'
 					}
 				}
 				stage('Test Search') {
 					steps {
 						echo 'Running Search Tests...'
-						sh 'mvn test -f search'
+						sh 'mvn test -pl search -am'
 					}
 				}
 				stage('SonarQube Analysis Search') {
 					steps {
 						echo 'Running SonarQube Analysis for Search...'
-						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -f search'
+						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl search -am'
 					}
 				}
 			}
@@ -541,19 +541,19 @@ pipeline {
 				stage('Build Storefront-BFF') {
 					steps {
 						echo 'Building Storefront-BFF Service...'
-						sh 'mvn clean install -DskipTests -f storefront-bff'
+						sh 'mvn clean install -DskipTests -pl storefront-bff -am'
 					}
 				}
 				stage('Test Storefront-BFF') {
 					steps {
 						echo 'Running Storefront-BFF Tests...'
-						sh 'mvn test -f storefront-bff'
+						sh 'mvn test -pl storefront-bff -am'
 					}
 				}
 				stage('SonarQube Analysis Storefront-BFF') {
 					steps {
 						echo 'Running SonarQube Analysis for Storefront-BFF...'
-						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -f storefront-bff'
+						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl storefront-bff -am'
 					}
 				}
 			}
@@ -575,19 +575,19 @@ pipeline {
 				stage('Build Tax') {
 					steps {
 						echo 'Building Tax Service...'
-						sh 'mvn clean install -DskipTests -f tax'
+						sh 'mvn clean install -DskipTests -pl tax -am'
 					}
 				}
 				stage('Test Tax') {
 					steps {
 						echo 'Running Tax Tests...'
-						sh 'mvn test -f tax'
+						sh 'mvn test -pl tax -am'
 					}
 				}
 				stage('SonarQube Analysis Tax') {
 					steps {
 						echo 'Running SonarQube Analysis for Tax...'
-						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -f tax'
+						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl tax -am'
 					}
 				}
 			}
@@ -609,19 +609,19 @@ pipeline {
 				stage('Build Webhook') {
 					steps {
 						echo 'Building Webhook Service...'
-						sh 'mvn clean install -DskipTests -f webhook'
+						sh 'mvn clean install -DskipTests -pl webhook -am'
 					}
 				}
 				stage('Test Webhook') {
 					steps {
 						echo 'Running Webhook Tests...'
-						sh 'mvn test -f webhook'
+						sh 'mvn test -pl webhook -am'
 					}
 				}
 				stage('SonarQube Analysis Webhook') {
 					steps {
 						echo 'Running SonarQube Analysis for Webhook...'
-						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -f webhook'
+						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl webhook -am'
 					}
 				}
 			}
