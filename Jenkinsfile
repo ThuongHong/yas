@@ -12,7 +12,7 @@ pipeline {
 	stages {
         stage('Global Dependencies Setup') {
             steps {
-                sh 'mvn clean install -DskipTests -pl common-library'
+                sh 'mvn clean install -DskipTests -pl common-library -am'
             }
         }
 
@@ -27,13 +27,13 @@ pipeline {
 				stage('Build Backoffice-BFF') {
 					steps {
 						echo 'Building Backoffice-BFF Service...'
-						sh 'mvn clean install -DskipTests -pl backoffice-bff'
+						sh 'mvn clean install -DskipTests -pl backoffice-bff -am'
 					}
 				}
 				stage('Test Backoffice-BFF') {
 					steps {
 						echo 'Running Backoffice-BFF Tests...'
-						sh 'mvn test jacoco:report -pl backoffice-bff'
+						sh 'mvn test jacoco:report -pl backoffice-bff -am'
 					}
 					post {
 						success {
@@ -44,7 +44,7 @@ pipeline {
 				stage('SonarQube Analysis Backoffice-BFF') {
 					steps {
 						echo 'Running SonarQube Analysis for Backoffice-BFF...'
-						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl backoffice-bff'
+						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl backoffice-bff -am'
 					}
 				}
 			}
@@ -66,13 +66,13 @@ pipeline {
 				stage('Build Cart') {
 					steps {
 						echo 'Building Cart Service...'
-						sh 'mvn clean install -DskipTests -pl cart'
+						sh 'mvn clean install -DskipTests -pl cart -am'
 					}
 				}
 				stage('Test Cart') {
 					steps {
 						echo 'Running Cart Tests...'
-						sh 'mvn test jacoco:report -pl cart'
+						sh 'mvn test jacoco:report -pl cart -am'
 					}
 					post {
 						success {
@@ -83,7 +83,7 @@ pipeline {
 				stage('SonarQube Analysis Cart') {
 					steps {
 						echo 'Running SonarQube Analysis for Cart...'
-						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl cart'
+						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl cart -am'
 					}
 				}
 			}
@@ -105,13 +105,13 @@ pipeline {
 				stage('Build Customer') {
 					steps {
 						echo 'Building Customer Service...'
-						sh 'mvn clean install -DskipTests -pl customer'
+						sh 'mvn clean install -DskipTests -pl customer -am'
 					}
 				}
 				stage('Test Customer') {
 					steps {
 						echo 'Running Customer Tests...'
-						sh 'mvn test jacoco:report -pl customer'
+						sh 'mvn test jacoco:report -pl customer -am'
 					}
 					post {
 						success {
@@ -122,7 +122,7 @@ pipeline {
 				stage('SonarQube Analysis Customer') {
 					steps {
 						echo 'Running SonarQube Analysis for Customer...'
-						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl customer'
+						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl customer -am'
 					}
 				}
 			}
@@ -144,13 +144,13 @@ pipeline {
 				stage('Build Inventory') {
 					steps {
 						echo 'Building Inventory Service...'
-						sh 'mvn clean install -DskipTests -pl inventory'
+						sh 'mvn clean install -DskipTests -pl inventory -am'
 					}
 				}
 				stage('Test Inventory') {
 					steps {
 						echo 'Running Inventory Tests...'
-						sh 'mvn test jacoco:report -pl inventory'
+						sh 'mvn test jacoco:report -pl inventory -am'
 					}
 					post {
 						success {
@@ -161,7 +161,7 @@ pipeline {
 				stage('SonarQube Analysis Inventory') {
 					steps {
 						echo 'Running SonarQube Analysis for Inventory...'
-						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl inventory'
+						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl inventory -am'
 					}
 				}
 			}
@@ -183,13 +183,13 @@ pipeline {
 				stage('Build Location') {
 					steps {
 						echo 'Building Location Service...'
-						sh 'mvn clean install -DskipTests -pl location'
+						sh 'mvn clean install -DskipTests -pl location -am'
 					}
 				}
 				stage('Test Location') {
 					steps {
 						echo 'Running Location Tests...'
-						sh 'mvn test jacoco:report -pl location'
+						sh 'mvn test jacoco:report -pl location -am'
 					}
 					post {
 						success {
@@ -200,7 +200,7 @@ pipeline {
 				stage('SonarQube Analysis Location') {
 					steps {
 						echo 'Running SonarQube Analysis for Location...'
-						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl location'
+						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl location -am'
 					}
 				}
 			}
@@ -222,13 +222,13 @@ pipeline {
 				stage('Build Media') {
 					steps {
 						echo 'Building Media Service...'
-						sh 'mvn clean install -DskipTests -pl media'
+						sh 'mvn clean install -DskipTests -pl media -am'
 					}
 				}
 				stage('Test Media') {
 					steps {
 						echo 'Running Media Tests...'
-						sh 'mvn test jacoco:report -pl media'
+						sh 'mvn test jacoco:report -pl media -am'
 					}
 					post {
 						success {
@@ -239,7 +239,7 @@ pipeline {
 				stage('SonarQube Analysis Media') {
 					steps {
 						echo 'Running SonarQube Analysis for Media...'
-						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl media'
+						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl media -am'
 					}
 				}
 			}
@@ -261,13 +261,13 @@ pipeline {
 				stage('Build Order') {
 					steps {
 						echo 'Building Order Service...'
-						sh 'mvn clean install -DskipTests -pl order'
+						sh 'mvn clean install -DskipTests -pl order -am'
 					}
 				}
 				stage('Test Order') {
 					steps {
 						echo 'Running Order Tests...'
-						sh 'mvn test jacoco:report -pl order'
+						sh 'mvn test jacoco:report -pl order -am'
 					}
 					post {
 						success {
@@ -278,7 +278,7 @@ pipeline {
 				stage('SonarQube Analysis Order') {
 					steps {
 						echo 'Running SonarQube Analysis for Order...'
-						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl order'
+						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl order -am'
 					}
 				}
 			}
@@ -300,13 +300,13 @@ pipeline {
 				stage('Build Payment') {
 					steps {
 						echo 'Building Payment Service...'
-						sh 'mvn clean install -DskipTests -pl payment'
+						sh 'mvn clean install -DskipTests -pl payment -am'
 					}
 				}
 				stage('Test Payment') {
 					steps {
 						echo 'Running Payment Tests...'
-						sh 'mvn test jacoco:report -pl payment'
+						sh 'mvn test jacoco:report -pl payment -am'
 					}
 					post {
 						success {
@@ -317,7 +317,7 @@ pipeline {
 				stage('SonarQube Analysis Payment') {
 					steps {
 						echo 'Running SonarQube Analysis for Payment...'
-						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl payment'
+						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl payment -am'
 					}
 				}
 			}
@@ -339,13 +339,13 @@ pipeline {
 				stage('Build Payment-Paypal') {
 					steps {
 						echo 'Building Payment-Paypal Service...'
-						sh 'mvn clean install -DskipTests -pl payment-paypal'
+						sh 'mvn clean install -DskipTests -pl payment-paypal -am'
 					}
 				}
 				stage('Test Payment-Paypal') {
 					steps {
 						echo 'Running Payment-Paypal Tests...'
-						sh 'mvn test jacoco:report -pl payment-paypal'
+						sh 'mvn test jacoco:report -pl payment-paypal -am'
 					}
 					post {
 						success {
@@ -356,7 +356,7 @@ pipeline {
 				stage('SonarQube Analysis Payment-Paypal') {
 					steps {
 						echo 'Running SonarQube Analysis for Payment-Paypal...'
-						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl payment-paypal'
+						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl payment-paypal -am'
 					}
 				}
 			}
@@ -378,13 +378,13 @@ pipeline {
 				stage('Build Product') {
 					steps {
 						echo 'Building Product Service...'
-						sh 'mvn clean install -DskipTests -pl product'
+						sh 'mvn clean install -DskipTests -pl product -am'
 					}
 				}
 				stage('Test Product') {
 					steps {
 						echo 'Running Product Tests...'
-						sh 'mvn test jacoco:report -pl product'
+						sh 'mvn test jacoco:report -pl product -am'
 					}
 					post {
 						success {
@@ -395,7 +395,7 @@ pipeline {
 				stage('SonarQube Analysis Product') {
 					steps {
 						echo 'Running SonarQube Analysis for Product...'
-						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl product'
+						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl product -am'
 					}
 				}
 			}
@@ -417,13 +417,13 @@ pipeline {
 				stage('Build Promotion') {
 					steps {
 						echo 'Building Promotion Service...'
-						sh 'mvn clean install -DskipTests -pl promotion'
+						sh 'mvn clean install -DskipTests -pl promotion -am'
 					}
 				}
 				stage('Test Promotion') {
 					steps {
 						echo 'Running Promotion Tests...'
-						sh 'mvn test jacoco:report -pl promotion'
+						sh 'mvn test jacoco:report -pl promotion -am'
 					}
 					post {
 						success {
@@ -434,7 +434,7 @@ pipeline {
 				stage('SonarQube Analysis Promotion') {
 					steps {
 						echo 'Running SonarQube Analysis for Promotion...'
-						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl promotion'
+						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl promotion -am'
 					}
 				}
 			}
@@ -456,13 +456,13 @@ pipeline {
 				stage('Build Rating') {
 					steps {
 						echo 'Building Rating Service...'
-						sh 'mvn clean install -DskipTests -pl rating'
+						sh 'mvn clean install -DskipTests -pl rating -am'
 					}
 				}
 				stage('Test Rating') {
 					steps {
 						echo 'Running Rating Tests...'
-						sh 'mvn test jacoco:report -pl rating'
+						sh 'mvn test jacoco:report -pl rating -am'
 					}
 					post {
 						success {
@@ -473,7 +473,7 @@ pipeline {
 				stage('SonarQube Analysis Rating') {
 					steps {
 						echo 'Running SonarQube Analysis for Rating...'
-						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl rating'
+						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl rating -am'
 					}
 				}
 			}
@@ -495,13 +495,13 @@ pipeline {
 				stage('Build Recommendation') {
 					steps {
 						echo 'Building Recommendation Service...'
-						sh 'mvn clean install -DskipTests -pl recommendation'
+						sh 'mvn clean install -DskipTests -pl recommendation -am'
 					}
 				}
 				stage('Test Recommendation') {
 					steps {
 						echo 'Running Recommendation Tests...'
-						sh 'mvn test jacoco:report -pl recommendation'
+						sh 'mvn test jacoco:report -pl recommendation -am'
 					}
 					post {
 						success {
@@ -512,7 +512,7 @@ pipeline {
 				stage('SonarQube Analysis Recommendation') {
 					steps {
 						echo 'Running SonarQube Analysis for Recommendation...'
-						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl recommendation'
+						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl recommendation -am'
 					}
 				}
 			}
@@ -534,13 +534,13 @@ pipeline {
 				stage('Build Sampledata') {
 					steps {
 						echo 'Building Sampledata Service...'
-						sh 'mvn clean install -DskipTests -pl sampledata'
+						sh 'mvn clean install -DskipTests -pl sampledata -am'
 					}
 				}
 				stage('Test Sampledata') {
 					steps {
 						echo 'Running Sampledata Tests...'
-						sh 'mvn test jacoco:report -pl sampledata'
+						sh 'mvn test jacoco:report -pl sampledata -am'
 					}
 					post {
 						success {
@@ -551,7 +551,7 @@ pipeline {
 				stage('SonarQube Analysis Sampledata') {
 					steps {
 						echo 'Running SonarQube Analysis for Sampledata...'
-						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl sampledata'
+						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl sampledata -am'
 					}
 				}
 			}
@@ -573,13 +573,13 @@ pipeline {
 				stage('Build Search') {
 					steps {
 						echo 'Building Search Service...'
-						sh 'mvn clean install -DskipTests -pl search'
+						sh 'mvn clean install -DskipTests -pl search -am'
 					}
 				}
 				stage('Test Search') {
 					steps {
 						echo 'Running Search Tests...'
-						sh 'mvn test jacoco:report -pl search'
+						sh 'mvn test jacoco:report -pl search -am'
 					}
                     post {
                     success {
@@ -590,7 +590,7 @@ pipeline {
 				stage('SonarQube Analysis Search') {
 					steps {
 						echo 'Running SonarQube Analysis for Search...'
-						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl search'
+						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl search -am'
 					}
 				}
 			}
@@ -612,13 +612,13 @@ pipeline {
 				stage('Build Storefront-BFF') {
 					steps {
 						echo 'Building Storefront-BFF Service...'
-						sh 'mvn clean install -DskipTests -pl storefront-bff'
+						sh 'mvn clean install -DskipTests -pl storefront-bff -am'
 					}
 				}
 				stage('Test Storefront-BFF') {
 					steps {
 						echo 'Running Storefront-BFF Tests...'
-						sh 'mvn test jacoco:report -pl storefront-bff'
+						sh 'mvn test jacoco:report -pl storefront-bff -am'
 					}
 					post {
 						success {
@@ -629,7 +629,7 @@ pipeline {
 				stage('SonarQube Analysis Storefront-BFF') {
 					steps {
 						echo 'Running SonarQube Analysis for Storefront-BFF...'
-						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl storefront-bff'
+						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl storefront-bff -am'
 					}
 				}
 			}
@@ -651,13 +651,13 @@ pipeline {
 				stage('Build Tax') {
 					steps {
 						echo 'Building Tax Service...'
-						sh 'mvn clean install -DskipTests -pl tax'
+						sh 'mvn clean install -DskipTests -pl tax -am'
 					}
 				}
 				stage('Test Tax') {
 					steps {
 						echo 'Running Tax Tests...'
-						sh 'mvn test jacoco:report -pl tax'
+						sh 'mvn test jacoco:report -pl tax -am'
 					}
 					post {
 						success {
@@ -668,7 +668,7 @@ pipeline {
 				stage('SonarQube Analysis Tax') {
 					steps {
 						echo 'Running SonarQube Analysis for Tax...'
-						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl tax'
+						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl tax -am'
 					}
 				}
 			}
@@ -690,13 +690,13 @@ pipeline {
 				stage('Build Webhook') {
 					steps {
 						echo 'Building Webhook Service...'
-						sh 'mvn clean install -DskipTests -pl webhook'
+						sh 'mvn clean install -DskipTests -pl webhook -am'
 					}
 				}
 				stage('Test Webhook') {
 					steps {
 						echo 'Running Webhook Tests...'
-						sh 'mvn test jacoco:report -pl webhook'
+						sh 'mvn test jacoco:report -pl webhook -am'
 					}
 					post {
 						success {
@@ -707,7 +707,7 @@ pipeline {
 				stage('SonarQube Analysis Webhook') {
 					steps {
 						echo 'Running SonarQube Analysis for Webhook...'
-						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl webhook'
+						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl webhook -am'
 					}
 				}
 			}
