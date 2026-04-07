@@ -39,7 +39,7 @@ public class ProductService {
     public ProductService(ElasticsearchOperations elasticsearchOperations) {
         this.elasticsearchOperations = elasticsearchOperations;
     }
-// Test6
+// Test8
     public ProductListGetVm findProductAdvance(ProductCriteriaDto productCriteria) {
         NativeQueryBuilder nativeQuery = NativeQuery.builder()
                 .withAggregation("categories", Aggregation.of(a -> a
