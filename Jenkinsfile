@@ -10,6 +10,13 @@ pipeline {
 	}
 
 	stages {
+        stage('Initialize & Clean') {
+            steps {
+                cleanWs()
+                echo 'Workspace cleaned and initialized.'
+            }
+        }
+
         stage('Global Dependencies Setup') {
             steps {
                 sh 'mvn clean install -DskipTests -pl common-library -am'
@@ -35,22 +42,12 @@ pipeline {
 						echo 'Running Backoffice-BFF Tests...'
 						sh 'mvn test jacoco:report -pl backoffice-bff -am'
 					}
-					post {
-						success {
-							recordCoverage(tools: [[parser: 'JACOCO', pattern: 'backoffice-bff/target/site/jacoco/jacoco.xml']])
-						}
-					}
 				}
 				stage('SonarQube Analysis Backoffice-BFF') {
 					steps {
 						echo 'Running SonarQube Analysis for Backoffice-BFF...'
 						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl backoffice-bff -am'
 					}
-				}
-			}
-			post {
-				always {
-					junit allowEmptyResults: true, testResults: 'backoffice-bff/**/surefire-reports/*.xml'
 				}
 			}
 		}
@@ -74,22 +71,12 @@ pipeline {
 						echo 'Running Cart Tests...'
 						sh 'mvn test jacoco:report -pl cart -am'
 					}
-					post {
-						success {
-							recordCoverage(tools: [[parser: 'JACOCO', pattern: 'cart/target/site/jacoco/jacoco.xml']])
-						}
-					}
 				}
 				stage('SonarQube Analysis Cart') {
 					steps {
 						echo 'Running SonarQube Analysis for Cart...'
 						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl cart -am'
 					}
-				}
-			}
-			post {
-				always {
-					junit allowEmptyResults: true, testResults: 'cart/**/surefire-reports/*.xml'
 				}
 			}
 		}
@@ -113,22 +100,12 @@ pipeline {
 						echo 'Running Customer Tests...'
 						sh 'mvn test jacoco:report -pl customer -am'
 					}
-					post {
-						success {
-							recordCoverage(tools: [[parser: 'JACOCO', pattern: 'customer/target/site/jacoco/jacoco.xml']])
-						}
-					}
 				}
 				stage('SonarQube Analysis Customer') {
 					steps {
 						echo 'Running SonarQube Analysis for Customer...'
 						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl customer -am'
 					}
-				}
-			}
-			post {
-				always {
-					junit allowEmptyResults: true, testResults: 'customer/**/surefire-reports/*.xml'
 				}
 			}
 		}
@@ -152,22 +129,12 @@ pipeline {
 						echo 'Running Inventory Tests...'
 						sh 'mvn test jacoco:report -pl inventory -am'
 					}
-					post {
-						success {
-							recordCoverage(tools: [[parser: 'JACOCO', pattern: 'inventory/target/site/jacoco/jacoco.xml']])
-						}
-					}
 				}
 				stage('SonarQube Analysis Inventory') {
 					steps {
 						echo 'Running SonarQube Analysis for Inventory...'
 						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl inventory -am'
 					}
-				}
-			}
-			post {
-				always {
-					junit allowEmptyResults: true, testResults: 'inventory/**/surefire-reports/*.xml'
 				}
 			}
 		}
@@ -191,22 +158,12 @@ pipeline {
 						echo 'Running Location Tests...'
 						sh 'mvn test jacoco:report -pl location -am'
 					}
-					post {
-						success {
-							recordCoverage(tools: [[parser: 'JACOCO', pattern: 'location/target/site/jacoco/jacoco.xml']])
-						}
-					}
 				}
 				stage('SonarQube Analysis Location') {
 					steps {
 						echo 'Running SonarQube Analysis for Location...'
 						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl location -am'
 					}
-				}
-			}
-			post {
-				always {
-					junit allowEmptyResults: true, testResults: 'location/**/surefire-reports/*.xml'
 				}
 			}
 		}
@@ -230,22 +187,12 @@ pipeline {
 						echo 'Running Media Tests...'
 						sh 'mvn test jacoco:report -pl media -am'
 					}
-					post {
-						success {
-							recordCoverage(tools: [[parser: 'JACOCO', pattern: 'media/target/site/jacoco/jacoco.xml']])
-						}
-					}
 				}
 				stage('SonarQube Analysis Media') {
 					steps {
 						echo 'Running SonarQube Analysis for Media...'
 						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl media -am'
 					}
-				}
-			}
-			post {
-				always {
-					junit allowEmptyResults: true, testResults: 'media/**/surefire-reports/*.xml'
 				}
 			}
 		}
@@ -269,22 +216,12 @@ pipeline {
 						echo 'Running Order Tests...'
 						sh 'mvn test jacoco:report -pl order -am'
 					}
-					post {
-						success {
-							recordCoverage(tools: [[parser: 'JACOCO', pattern: 'order/target/site/jacoco/jacoco.xml']])
-						}
-					}
 				}
 				stage('SonarQube Analysis Order') {
 					steps {
 						echo 'Running SonarQube Analysis for Order...'
 						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl order -am'
 					}
-				}
-			}
-			post {
-				always {
-					junit allowEmptyResults: true, testResults: 'order/**/surefire-reports/*.xml'
 				}
 			}
 		}
@@ -308,22 +245,12 @@ pipeline {
 						echo 'Running Payment Tests...'
 						sh 'mvn test jacoco:report -pl payment -am'
 					}
-					post {
-						success {
-							recordCoverage(tools: [[parser: 'JACOCO', pattern: 'payment/target/site/jacoco/jacoco.xml']])
-						}
-					}
 				}
 				stage('SonarQube Analysis Payment') {
 					steps {
 						echo 'Running SonarQube Analysis for Payment...'
 						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl payment -am'
 					}
-				}
-			}
-			post {
-				always {
-					junit allowEmptyResults: true, testResults: 'payment/**/surefire-reports/*.xml'
 				}
 			}
 		}
@@ -347,22 +274,12 @@ pipeline {
 						echo 'Running Payment-Paypal Tests...'
 						sh 'mvn test jacoco:report -pl payment-paypal -am'
 					}
-					post {
-						success {
-							recordCoverage(tools: [[parser: 'JACOCO', pattern: 'payment-paypal/target/site/jacoco/jacoco.xml']])
-						}
-					}
 				}
 				stage('SonarQube Analysis Payment-Paypal') {
 					steps {
 						echo 'Running SonarQube Analysis for Payment-Paypal...'
 						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl payment-paypal -am'
 					}
-				}
-			}
-			post {
-				always {
-					junit allowEmptyResults: true, testResults: 'payment-paypal/**/surefire-reports/*.xml'
 				}
 			}
 		}
@@ -386,22 +303,12 @@ pipeline {
 						echo 'Running Product Tests...'
 						sh 'mvn test jacoco:report -pl product -am'
 					}
-					post {
-						success {
-							recordCoverage(tools: [[parser: 'JACOCO', pattern: 'product/target/site/jacoco/jacoco.xml']])
-						}
-					}
 				}
 				stage('SonarQube Analysis Product') {
 					steps {
 						echo 'Running SonarQube Analysis for Product...'
 						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl product -am'
 					}
-				}
-			}
-			post {
-				always {
-					junit allowEmptyResults: true, testResults: 'product/**/surefire-reports/*.xml'
 				}
 			}
 		}
@@ -425,22 +332,12 @@ pipeline {
 						echo 'Running Promotion Tests...'
 						sh 'mvn test jacoco:report -pl promotion -am'
 					}
-					post {
-						success {
-							recordCoverage(tools: [[parser: 'JACOCO', pattern: 'promotion/target/site/jacoco/jacoco.xml']])
-						}
-					}
 				}
 				stage('SonarQube Analysis Promotion') {
 					steps {
 						echo 'Running SonarQube Analysis for Promotion...'
 						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl promotion -am'
 					}
-				}
-			}
-			post {
-				always {
-					junit allowEmptyResults: true, testResults: 'promotion/**/surefire-reports/*.xml'
 				}
 			}
 		}
@@ -464,22 +361,12 @@ pipeline {
 						echo 'Running Rating Tests...'
 						sh 'mvn test jacoco:report -pl rating -am'
 					}
-					post {
-						success {
-							recordCoverage(tools: [[parser: 'JACOCO', pattern: 'rating/target/site/jacoco/jacoco.xml']])
-						}
-					}
 				}
 				stage('SonarQube Analysis Rating') {
 					steps {
 						echo 'Running SonarQube Analysis for Rating...'
 						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl rating -am'
 					}
-				}
-			}
-			post {
-				always {
-					junit allowEmptyResults: true, testResults: 'rating/**/surefire-reports/*.xml'
 				}
 			}
 		}
@@ -503,22 +390,12 @@ pipeline {
 						echo 'Running Recommendation Tests...'
 						sh 'mvn test jacoco:report -pl recommendation -am'
 					}
-					post {
-						success {
-							recordCoverage(tools: [[parser: 'JACOCO', pattern: 'recommendation/target/site/jacoco/jacoco.xml']])
-						}
-					}
 				}
 				stage('SonarQube Analysis Recommendation') {
 					steps {
 						echo 'Running SonarQube Analysis for Recommendation...'
 						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl recommendation -am'
 					}
-				}
-			}
-			post {
-				always {
-					junit allowEmptyResults: true, testResults: 'recommendation/**/surefire-reports/*.xml'
 				}
 			}
 		}
@@ -542,22 +419,12 @@ pipeline {
 						echo 'Running Sampledata Tests...'
 						sh 'mvn test jacoco:report -pl sampledata -am'
 					}
-					post {
-						success {
-							recordCoverage(tools: [[parser: 'JACOCO', pattern: 'sampledata/target/site/jacoco/jacoco.xml']])
-						}
-					}
 				}
 				stage('SonarQube Analysis Sampledata') {
 					steps {
 						echo 'Running SonarQube Analysis for Sampledata...'
 						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl sampledata -am'
 					}
-				}
-			}
-			post {
-				always {
-					junit allowEmptyResults: true, testResults: 'sampledata/**/surefire-reports/*.xml'
 				}
 			}
 		}
@@ -581,26 +448,12 @@ pipeline {
 						echo 'Running Search Tests...'
 						sh 'mvn test jacoco:report -pl search -am'
 					}
-                    post {
-                    success {
-                        // recordCoverage(tools: [[parser: 'JACOCO', pattern: 'search/target/site/jacoco/jacoco.xml']])
-                        recordCoverage(
-                            tools: [[parser: 'JACOCO', pattern: 'search/target/site/jacoco/jacoco.xml']],
-                            sourceDirectories: [[path: 'search/src/main/java']]
-                        )
-                    }
-                }
 				}
 				stage('SonarQube Analysis Search') {
 					steps {
 						echo 'Running SonarQube Analysis for Search...'
 						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl search -am'
 					}
-				}
-			}
-			post {
-				always {
-					junit allowEmptyResults: true, testResults: 'search/**/surefire-reports/*.xml'
 				}
 			}
 		}
@@ -624,22 +477,12 @@ pipeline {
 						echo 'Running Storefront-BFF Tests...'
 						sh 'mvn test jacoco:report -pl storefront-bff -am'
 					}
-					post {
-						success {
-							recordCoverage(tools: [[parser: 'JACOCO', pattern: 'storefront-bff/target/site/jacoco/jacoco.xml']])
-						}
-					}
 				}
 				stage('SonarQube Analysis Storefront-BFF') {
 					steps {
 						echo 'Running SonarQube Analysis for Storefront-BFF...'
 						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl storefront-bff -am'
 					}
-				}
-			}
-			post {
-				always {
-					junit allowEmptyResults: true, testResults: 'storefront-bff/**/surefire-reports/*.xml'
 				}
 			}
 		}
@@ -663,22 +506,12 @@ pipeline {
 						echo 'Running Tax Tests...'
 						sh 'mvn test jacoco:report -pl tax -am'
 					}
-					post {
-						success {
-							recordCoverage(tools: [[parser: 'JACOCO', pattern: 'tax/target/site/jacoco/jacoco.xml']])
-						}
-					}
 				}
 				stage('SonarQube Analysis Tax') {
 					steps {
 						echo 'Running SonarQube Analysis for Tax...'
 						sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl tax -am'
 					}
-				}
-			}
-			post {
-				always {
-					junit allowEmptyResults: true, testResults: 'tax/**/surefire-reports/*.xml'
 				}
 			}
 		}
@@ -702,11 +535,6 @@ pipeline {
 						echo 'Running Webhook Tests...'
 						sh 'mvn test jacoco:report -pl webhook -am'
 					}
-					post {
-						success {
-							recordCoverage(tools: [[parser: 'JACOCO', pattern: 'webhook/target/site/jacoco/jacoco.xml']])
-						}
-					}
 				}
 				stage('SonarQube Analysis Webhook') {
 					steps {
@@ -715,11 +543,39 @@ pipeline {
 					}
 				}
 			}
-			post {
-				always {
-					junit allowEmptyResults: true, testResults: 'webhook/**/surefire-reports/*.xml'
-				}
-			}
 		}
+
+        post {
+        success {
+            echo 'Gom tất cả báo cáo Coverage...'
+            recordCoverage(
+                tools: [[parser: 'JACOCO', pattern: '**/target/site/jacoco/jacoco.xml']],
+                sourceDirectories: [
+                    [path: 'search/src/main/java'],
+                    [path: 'media/src/main/java'],
+                    [path: 'cart/src/main/java'],
+                    [path: 'customer/src/main/java'],
+                    [path: 'inventory/src/main/java'],
+                    [path: 'location/src/main/java'],
+                    [path: 'order/src/main/java'],
+                    [path: 'payment/src/main/java'],
+                    [path: 'payment-paypal/src/main/java'],
+                    [path: 'product/src/main/java'],
+                    [path: 'promotion/src/main/java'],
+                    [path: 'rating/src/main/java'],
+                    [path: 'recommendation/src/main/java'],
+                    [path: 'sampledata/src/main/java'],
+                    [path: 'storefront-bff/src/main/java'],
+                    [path: 'tax/src/main/java'],
+                    [path: 'webhook/src/main/java'],
+                    [path: 'backoffice-bff/src/main/java'],
+                    [path: 'common-library/src/main/java']
+                ]
+            )
+        }
+        always {
+            junit allowEmptyResults: true, testResults: '**/target/surefire-reports/*.xml'
+        }
+    }
 	}
 }
