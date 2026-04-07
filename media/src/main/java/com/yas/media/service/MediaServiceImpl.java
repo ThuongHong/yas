@@ -21,7 +21,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
 
-@RequiredArgsConstructor
+@RequiredArgsConstructor//Test
 @Service
 public class MediaServiceImpl implements MediaService {
 
