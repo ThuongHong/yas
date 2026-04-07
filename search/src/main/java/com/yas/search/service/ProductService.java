@@ -95,7 +95,7 @@ public class ProductService {
                 productPage.getTotalPages(),
                 productPage.isLast(),
                 getAggregations(searchHitsResult));
-    }// Test 2
+    }// Test 3
 
     private void extractedTermsFilter(String fieldValues, String productField, BoolQuery.Builder b) {
         if (StringUtils.isBlank(fieldValues)) {
