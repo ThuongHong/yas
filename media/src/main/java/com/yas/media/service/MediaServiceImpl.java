@@ -28,7 +28,7 @@ public class MediaServiceImpl implements MediaService {
     private final MediaVmMapper mediaVmMapper;
     private final MediaRepository mediaRepository;
     private final FileSystemRepository fileSystemRepository;
-    private final YasConfig yasConfig;//test4
+    private final YasConfig yasConfig;//test5
 
     @Override
     @SneakyThrows
