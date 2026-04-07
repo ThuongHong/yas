@@ -120,7 +120,15 @@ def buildService(String serviceName) {
     echo "--- Processing Service: ${serviceName} ---"
     sh "mvn install -DskipTests -pl ${serviceName} -am"
     sh "mvn test jacoco:report -pl ${serviceName} -am"
-    sh "mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl ${serviceName} -am"
+    // sh "mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl ${serviceName} -am"
+    sh """
+        mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+        -pl ${serviceName} \
+        -am \
+        -Dsonar.projectKey=thuonghong_yas-${serviceName} \
+        -Dsonar.projectName=yas-${serviceName} \
+        -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
+    """
 }
 
 def getSourcePaths() {
