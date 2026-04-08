@@ -67,7 +67,7 @@ public class ProductService extends AbstractCircuitBreakFallbackHandler {
                 .body(buildProductQuantityItems(orderVm.orderItemVms()))
                 .retrieve();
     }
-
+//tesst
     @Retry(name = "restApi")
     @CircuitBreaker(name = "restCircuitBreaker", fallbackMethod = "handleProductInfomationFallback")
     public Map<Long, ProductCheckoutListVm> getProductInfomation(Set<Long> ids, int pageNo, int pageSize) {
