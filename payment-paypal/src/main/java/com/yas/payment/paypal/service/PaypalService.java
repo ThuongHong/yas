@@ -30,7 +30,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class PaypalService {
     private final PayPalHttpClientInitializer payPalHttpClientInitializer;
-    private final BigDecimal maxPay = BigDecimal.valueOf(1000);//tesstttttt
+    private final BigDecimal maxPay = BigDecimal.valueOf(1000);//tesstttttty
     @Value("${yas.public.url}/capture")
     private String returnUrl;
     @Value("${yas.public.url}/cancel")
