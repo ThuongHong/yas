@@ -139,12 +139,7 @@ def buildService(String serviceName) {
     sh "mvn clean install -DskipTests -pl ${serviceName} -am"
     sh "mvn test jacoco:report -pl ${serviceName} -am"
 
-    snykSecurity(
-        snykInstallation: 'snyk-tool',
-        snykTokenId: 'snyk-token',
-        targetFile: "${serviceName}/pom.xml",
-        failOnIssues: false
-    )
+    sh "/opt/snyk/snyk-linux test --file=${serviceName}/pom.xml || true"
 
     withSonarQubeEnv('yas') {
         sh """
