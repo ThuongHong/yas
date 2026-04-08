@@ -105,10 +105,13 @@ pipeline {
 
     post {
         success {
-            echo 'Gom tất cả báo cáo Coverage...'
+            echo 'Gom tất cả báo cáo Coverage và kiểm tra ngưỡng 70%...'
             recordCoverage(
                 tools: [[parser: 'JACOCO', pattern: '**/target/site/jacoco/jacoco.xml']],
-                sourceDirectories: getSourcePaths()
+                sourceDirectories: getSourcePaths(),
+                qualityGates: [
+                    [threshold: 70.0, metric: 'LINE', baseline: 'PROJECT', criticality: 'FAILURE']
+                ]
             )
         }
         always {
