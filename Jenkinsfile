@@ -7,7 +7,6 @@ pipeline {
 
     environment {
         SONAR_TOKEN = credentials('sonar-token')
-        SNYK_TOKEN = credentials('snyk-token')
     }
 
     stages {

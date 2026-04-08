@@ -24,7 +24,7 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.util.UriComponentsBuilder;
 
 @Service
-@RequiredArgsConstructor//tesst
+@RequiredArgsConstructor//tesstt
 public class ProductService extends AbstractCircuitBreakFallbackHandler {
 
     private final RestClient restClient;
