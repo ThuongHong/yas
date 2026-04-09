@@ -119,56 +119,13 @@ pipeline {
     }
 }
 
-def hasChanges(String servicePath) {
-    try {
-        def branch = env.BRANCH_NAME
-
-        // 🔹 CASE 1: main / develop → so với commit trước
-        if (branch == 'main' || branch == 'develop') {
-            def diff = sh(
-                script: "git diff --name-only HEAD~1 HEAD",
-                returnStdout: true
-            ).trim()
-
-            if (!diff) return false
-
-            return diff.split('\n').any { file ->
-                file.startsWith(servicePath)
-            }
-        }
-
-        // 🔹 CASE 2: branch thường → so với main (merge-base)
-        sh "git fetch origin main"
-
-        def base = sh(
-            script: "git merge-base HEAD origin/main",
-            returnStdout: true
-        ).trim()
-
-        def diff = sh(
-            script: "git diff --name-only ${base} HEAD",
-            returnStdout: true
-        ).trim()
-
-        if (!diff) return false
-
-        return diff.split('\n').any { file ->
-            file.startsWith(servicePath)
-        }
-
-    } catch (e) {
-        echo "Error detecting changes: ${e}"
-        return true
-    }
-}
-
 def buildService(String serviceName) {
     echo "--- Processing Service: ${serviceName} ---"
     
     sh "mvn clean install -DskipTests -pl ${serviceName} -am"
     sh "mvn test jacoco:report -pl ${serviceName} -am"
 
-    sh "/opt/snyk/snyk-linux test --file=${serviceName}/pom.xml || true"
+    sh "/opt/snyk/snyk-linux test -d --file=${serviceName}/pom.xml || true"
 
     withSonarQubeEnv('yas') {
         sh """
