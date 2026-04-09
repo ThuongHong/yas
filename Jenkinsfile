@@ -165,6 +165,7 @@ def buildService(String serviceName) {
         sh """
             mvn sonar:sonar \
             -pl ${serviceName} \
+            -am \
             -Dsonar.projectKey=thuonghong_yas-${serviceName} \
             -Dsonar.projectName=yas-${serviceName} \
             -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
