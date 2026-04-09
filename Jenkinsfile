@@ -101,6 +101,20 @@ pipeline {
                 }
             }
         }
+
+        stage('Security Scan (Snyk - Root)') {
+            steps {
+                echo 'Running Snyk scan for entire monorepo...'
+
+                snykSecurity(
+                    snykInstallation: 'snyk-tool',
+                    snykTokenId: 'snyk-token',
+                    targetFile: 'pom.xml',
+                    failOnIssues: false,
+                    additionalArguments: '--all-projects --debug --org=thuonghong -Drevision=1.0-SNAPSHOT'
+                )
+            }
+        }
     }
 
     post {
@@ -126,14 +140,13 @@ def buildService(String serviceName) {
     sh "mvn clean install -DskipTests -pl ${serviceName} -am"
     sh "mvn test jacoco:report -pl ${serviceName} -am"
 
-    // sh "/opt/snyk/snyk-linux test -d --file=${serviceName}/pom.xml || true"
-    snykSecurity(
-        snykInstallation: 'snyk-tool',
-        snykTokenId: 'snyk-token',
-        targetFile: "${serviceName}/pom.xml",
-        failOnIssues: false,
-        additionalArguments: '--debug --org=thuonghong -Drevision=1.0-SNAPSHOT'
-    )
+    // snykSecurity(
+    //     snykInstallation: 'snyk-tool',
+    //     snykTokenId: 'snyk-token',
+    //     targetFile: "${serviceName}/pom.xml",
+    //     failOnIssues: false,
+    //     additionalArguments: '--debug --org=thuonghong -Drevision=1.0-SNAPSHOT'
+    // )
 
     withSonarQubeEnv('yas') {
         sh """
