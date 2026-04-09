@@ -13,7 +13,7 @@ pipeline {
         stage('Initialize & Clean') {
             steps {
                 cleanWs()
-                checkout scmthuonghong
+                checkout scm
                 // sh "find . -name mvnw -exec chmod +x {} \\;"
                 echo 'Workspace cleaned and initialized.'
             }
