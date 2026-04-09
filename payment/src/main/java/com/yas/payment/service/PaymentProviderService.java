@@ -48,7 +48,8 @@ public class PaymentProviderService {
 
     /**
      * Create payment provider.
-     *
+     * AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+     * 
      * @param createPaymentVm {@link CreatePaymentVm} payment provider request.
      * @return {@link PaymentProviderVm} created payment provider.
      */

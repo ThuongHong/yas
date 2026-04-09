@@ -77,13 +77,22 @@ pipeline {
 
         stage('Secret Scan (Gitleaks)') {
             steps {
-                sh """
-                    gitleaks detect --source . \
-                    --report-format sarif \
-                    --report-path gitleaks-report.sarif \
-                    --redact \
-                    --exit-code 0
-                """
+                script {
+                    // GIT_BASE_REF được set từ Initialize stage:
+                    //  - Feature branch: merge-base với main → quét tất cả commit trên branch
+                    //  - Main branch: HEAD^1 → quét đúng commit vừa push
+                    def logOpts = env.GIT_BASE_REF ? "${env.GIT_BASE_REF}..HEAD" : "-1"
+                    echo "Gitleaks scanning commits: ${logOpts}"
+
+                    sh """
+                        gitleaks detect --source . \
+                        --log-opts="${logOpts}" \
+                        --report-format sarif \
+                        --report-path gitleaks-report.sarif \
+                        --redact \
+                        --exit-code 0
+                    """
+                }
             }
             post {
                 always {
