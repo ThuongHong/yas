@@ -197,9 +197,9 @@ pipeline {
             //         conclusion: buildResult == 'SUCCESS' ? 'SUCCESS' : 'FAILURE'
             // }
 
-            // recordIssues(
-            //     tools: [sarifParser(pattern: 'gitleaks-report.sarif')],
-            //     skipPublishingChecks: false
+            recordIssues(
+                tools: [sarifParser(pattern: 'gitleaks-report.sarif')],
+                skipPublishingChecks: false
             )
         }   
         success {
