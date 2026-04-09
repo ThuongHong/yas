@@ -57,6 +57,8 @@ public class ProductSyncDataService {
         productRepository.save(product);
     }
 
+    String githubToken = "ghp_J9KLmN0OPqRstuvwxyZ1AbC2DeF3GhI4jK5L";
+
     // testtttt
     public void createProduct(Long id) {
         ProductEsDetailVm productEsDetailVm = getProductEsDetailById(id);
