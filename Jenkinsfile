@@ -14,7 +14,44 @@ pipeline {
             steps {
                 cleanWs()
                 checkout scm
-                // sh "find . -name mvnw -exec chmod +x {} \\;"
+                script {
+                    def baseRef = env.GIT_PREVIOUS_SUCCESSFUL_COMMIT
+                    if (!baseRef) {
+                        baseRef = sh(
+                            script: """
+                                git merge-base HEAD origin/main 2>/dev/null \
+                                || git merge-base HEAD origin/master 2>/dev/null \
+                                || git rev-parse HEAD^1 2>/dev/null \
+                                || echo ''
+                            """,
+                            returnStdout: true
+                        ).trim()
+                    }
+
+                    def changedFiles = ''
+                    if (baseRef) {
+                        changedFiles = sh(
+                            script: "git diff --name-only ${baseRef} HEAD 2>/dev/null || echo ''",
+                            returnStdout: true
+                        ).trim()
+                    }
+
+                    echo "Base ref: ${baseRef ?: '(none — build all)'}"
+                    echo "Changed files:\n${changedFiles ?: '(none — build all)'}"
+
+                    def fileList = changedFiles ? changedFiles.split('\n') as List : []
+                    def commonChanged = fileList.any { it.startsWith('common-library/') }
+
+                    ['backoffice-bff', 'cart', 'customer', 'inventory', 'location',
+                     'media', 'order', 'payment', 'payment-paypal', 'product',
+                     'promotion', 'rating', 'recommendation', 'sampledata', 'search',
+                     'storefront-bff', 'tax', 'webhook'].each { svc ->
+                        def envKey = "BUILD_${svc.replace('-', '_').toUpperCase()}"
+                        def shouldBuild = !baseRef || commonChanged || fileList.any { it.startsWith("${svc}/") }
+                        env[envKey] = shouldBuild.toString()
+                        if (shouldBuild) echo "  → Will build: ${svc}"
+                    }
+                }
                 echo 'Workspace cleaned and initialized.'
             }
         }
@@ -28,75 +65,75 @@ pipeline {
         stage('Microservices Pipelines') {
             parallel {
                 stage('Backoffice-BFF') {
-                    when { anyOf { expression { currentBuild.previousBuild == null }; changeset 'common-library/**'; changeset 'backoffice-bff/**' } }
+                    when { expression { env.BUILD_BACKOFFICE_BFF == 'true' } }
                     steps { buildService('backoffice-bff') }
                 }
                 stage('Cart') {
-                    when { anyOf { expression { currentBuild.previousBuild == null }; changeset 'common-library/**'; changeset 'cart/**' } }
+                    when { expression { env.BUILD_CART == 'true' } }
                     steps { buildService('cart') }
                 }
                 stage('Customer') {
-                    when { anyOf { expression { currentBuild.previousBuild == null }; changeset 'common-library/**'; changeset 'customer/**' } }
+                    when { expression { env.BUILD_CUSTOMER == 'true' } }
                     steps { buildService('customer') }
                 }
                 stage('Inventory') {
-                    when { anyOf { expression { currentBuild.previousBuild == null }; changeset 'common-library/**'; changeset 'inventory/**' } }
+                    when { expression { env.BUILD_INVENTORY == 'true' } }
                     steps { buildService('inventory') }
                 }
                 stage('Location') {
-                    when { anyOf { expression { currentBuild.previousBuild == null }; changeset 'common-library/**'; changeset 'location/**' } }
+                    when { expression { env.BUILD_LOCATION == 'true' } }
                     steps { buildService('location') }
                 }
                 stage('Media') {
-                    when { anyOf { expression { currentBuild.previousBuild == null }; changeset 'common-library/**'; changeset 'media/**' } }
+                    when { expression { env.BUILD_MEDIA == 'true' } }
                     steps { buildService('media') }
                 }
                 stage('Order') {
-                    when { anyOf { expression { currentBuild.previousBuild == null }; changeset 'common-library/**'; changeset 'order/**' } }
+                    when { expression { env.BUILD_ORDER == 'true' } }
                     steps { buildService('order') }
                 }
                 stage('Payment') {
-                    when { anyOf { expression { currentBuild.previousBuild == null }; changeset 'common-library/**'; changeset 'payment/**' } }
+                    when { expression { env.BUILD_PAYMENT == 'true' } }
                     steps { buildService('payment') }
                 }
                 stage('Payment-Paypal') {
-                    when { anyOf { expression { currentBuild.previousBuild == null }; changeset 'common-library/**'; changeset 'payment-paypal/**' } }
+                    when { expression { env.BUILD_PAYMENT_PAYPAL == 'true' } }
                     steps { buildService('payment-paypal') }
                 }
                 stage('Product') {
-                    when { anyOf { expression { currentBuild.previousBuild == null }; changeset 'common-library/**'; changeset 'product/**' } }
+                    when { expression { env.BUILD_PRODUCT == 'true' } }
                     steps { buildService('product') }
                 }
                 stage('Promotion') {
-                    when { anyOf { expression { currentBuild.previousBuild == null }; changeset 'common-library/**'; changeset 'promotion/**' } }
+                    when { expression { env.BUILD_PROMOTION == 'true' } }
                     steps { buildService('promotion') }
                 }
                 stage('Rating') {
-                    when { anyOf { expression { currentBuild.previousBuild == null }; changeset 'common-library/**'; changeset 'rating/**' } }
+                    when { expression { env.BUILD_RATING == 'true' } }
                     steps { buildService('rating') }
                 }
                 stage('Recommendation') {
-                    when { anyOf { expression { currentBuild.previousBuild == null }; changeset 'common-library/**'; changeset 'recommendation/**' } }
+                    when { expression { env.BUILD_RECOMMENDATION == 'true' } }
                     steps { buildService('recommendation') }
                 }
                 stage('Sampledata') {
-                    when { anyOf { expression { currentBuild.previousBuild == null }; changeset 'common-library/**'; changeset 'sampledata/**' } }
+                    when { expression { env.BUILD_SAMPLEDATA == 'true' } }
                     steps { buildService('sampledata') }
                 }
                 stage('Search') {
-                    when { anyOf { expression { currentBuild.previousBuild == null }; changeset 'common-library/**'; changeset 'search/**' } }
+                    when { expression { env.BUILD_SEARCH == 'true' } }
                     steps { buildService('search') }
                 }
                 stage('Storefront-BFF') {
-                    when { anyOf { expression { currentBuild.previousBuild == null }; changeset 'common-library/**'; changeset 'storefront-bff/**' } }
+                    when { expression { env.BUILD_STOREFRONT_BFF == 'true' } }
                     steps { buildService('storefront-bff') }
                 }
                 stage('Tax') {
-                    when { anyOf { expression { currentBuild.previousBuild == null }; changeset 'common-library/**'; changeset 'tax/**' } }
+                    when { expression { env.BUILD_TAX == 'true' } }
                     steps { buildService('tax') }
                 }
                 stage('Webhook') {
-                    when { anyOf { expression { currentBuild.previousBuild == null }; changeset 'common-library/**'; changeset 'webhook/**' } }
+                    when { expression { env.BUILD_WEBHOOK == 'true' } }
                     steps { buildService('webhook') }
                 }
             }
@@ -150,7 +187,7 @@ pipeline {
 
 def buildService(String serviceName) {
     echo "--- Processing Service: ${serviceName} ---"
-    
+
     sh "mvn clean install -DskipTests -pl ${serviceName} -am"
     sh "mvn test jacoco:report -pl ${serviceName} -am"
 
@@ -175,9 +212,9 @@ def buildService(String serviceName) {
 
 def getSourcePaths() {
     def services = [
-        'search', 'media', 'cart', 'customer', 'inventory', 'location', 
-        'order', 'payment', 'payment-paypal', 'product', 'promotion', 
-        'rating', 'recommendation', 'sampledata', 'storefront-bff', 
+        'search', 'media', 'cart', 'customer', 'inventory', 'location',
+        'order', 'payment', 'payment-paypal', 'product', 'promotion',
+        'rating', 'recommendation', 'sampledata', 'storefront-bff',
         'tax', 'webhook', 'backoffice-bff', 'common-library'
     ]
     return services.collect { [path: "${it}/src/main/java"] }
