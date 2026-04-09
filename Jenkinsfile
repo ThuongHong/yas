@@ -67,12 +67,14 @@ pipeline {
             steps {
                 echo 'Running Gitleaks to detect secrets and credentials in source code...'
                 sh '''
-                    gitleaks detect \
-                    --source . \
-                    --report-format json \
-                    --report-path gitleaks-report.json
+                    gitleaks detect --source . \
+                    --log-opts="origin/main..HEAD" \
+                    --report-format sarif \
+                    --report-path gitleaks-report.sarif \
+                    --redact \
+                    --verbose
                 '''
-                archiveArtifacts artifacts: 'gitleaks-report.json', allowEmptyArchive: true
+                archiveArtifacts artifacts: 'gitleaks-report.sarif', allowEmptyArchive: true
             }
         }
 
