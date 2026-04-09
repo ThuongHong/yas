@@ -28,6 +28,7 @@ pipeline {
                     //     ).trim()
                     // }
                     sh 'git fetch --all --prune'
+                    sh 'git fetch --unshallow || true'
 
                     def baseRef = sh(
                         script: """
@@ -42,7 +43,7 @@ pipeline {
                     def changedFiles = ''
                     if (baseRef) {
                         changedFiles = sh(
-                            script: "git diff --name-only ${baseRef} HEAD 2>/dev/null || echo ''",
+                            script: "git diff --name-only ${baseRef}}...HEAD 2>/dev/null || echo ''",
                             returnStdout: true
                         ).trim()
                     }
