@@ -64,23 +64,18 @@ pipeline {
         }
 
         stage('Secret Scan (Gitleaks)') {
+            when { expression { env.GIT_BASE_REF } }
             steps {
-                echo 'Running Gitleaks on your changes only...'
-                sh '''
-                    git fetch origin main --quiet
-
-                    BASE_COMMIT=$(git merge-base HEAD origin/main)
-                    
-                    echo "Scanning from base commit: $BASE_COMMIT to HEAD"
-
+                echo "Smart Scanning from ${env.GIT_BASE_REF} to HEAD..."
+                sh """
                     gitleaks detect --source . \
-                    --log-opts="$BASE_COMMIT..HEAD" \
+                    --log-opts="${env.GIT_BASE_REF}..HEAD" \
                     --report-format sarif \
                     --report-path gitleaks-report.sarif \
                     --redact \
                     --verbose \
                     --exit-code 0
-                '''
+                """
             }
             post {
                 always {
