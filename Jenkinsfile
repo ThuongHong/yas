@@ -15,17 +15,30 @@ pipeline {
                 cleanWs()
                 checkout scm
                 script {
-                    sh '''
-                        git fetch --all --prune
-                        git fetch --unshallow || true
-                    '''
+                    sh 'git fetch origin main --quiet'
 
-                    def changedFiles = sh(
-                        script: "git diff --name-only origin/main...HEAD",
+                    def targetBranch = env.CHANGE_TARGET ?: 'main'
+                    def baseRef = sh(
+                        script: """
+                            git merge-base HEAD origin/${targetBranch} 2>/dev/null \
+                            || git merge-base HEAD origin/master 2>/dev/null \
+                            || echo ''
+                        """,
                         returnStdout: true
                     ).trim()
 
-                    echo "Changed files:\n${changedFiles ?: '(none)'}"
+                    env.GIT_BASE_REF = baseRef
+
+                    def changedFiles = ''
+                    if (env.GIT_BASE_REF && env.GIT_BASE_REF != sh(script: 'git rev-parse HEAD', returnStdout: true).trim()) {
+                        changedFiles = sh(
+                            script: "git diff --name-only ${env.GIT_BASE_REF} HEAD 2>/dev/null || echo ''",
+                            returnStdout: true
+                        ).trim()
+                    }
+
+                    echo "Base ref: ${env.GIT_BASE_REF ?: '(none — build all)'}"
+                    echo "Changed files:\n${changedFiles ?: '(none — build all)'}"
 
                     def allServices = ['backoffice-bff', 'cart', 'customer', 'inventory', 'location',
                                     'media', 'order', 'payment', 'payment-paypal', 'product',
@@ -47,11 +60,6 @@ pipeline {
 
                     echo "Services to build: ${servicesToBuild}"
                     env.SERVICES_TO_BUILD = servicesToBuild.join(',')
-
-                    env.GIT_BASE_REF = sh(
-                        script: "git merge-base HEAD origin/main",
-                        returnStdout: true
-                    ).trim()
                 }
 
                 echo 'Workspace cleaned and initialized.'
@@ -61,12 +69,9 @@ pipeline {
         stage('Secret Scan (Gitleaks)') {
             steps {
                 script {
-                    def currentHead = sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
+                    def logOpts = env.GIT_BASE_REF ? "${env.GIT_BASE_REF}..HEAD" : "-1"
 
-                    def logOpts = (env.GIT_BASE_REF && env.GIT_BASE_REF != currentHead) ? 
-                                "${env.GIT_BASE_REF}..HEAD" : "-1"
-
-                    echo "Gitleaks is scanning with range: ${logOpts}"
+                    echo "Gitleaks scanning with log-opts: ${logOpts}"
 
                     sh """
                         gitleaks detect --source . \
@@ -74,7 +79,6 @@ pipeline {
                         --report-format sarif \
                         --report-path gitleaks-report.sarif \
                         --redact \
-                        --verbose \
                         --exit-code 0
                     """
                 }
