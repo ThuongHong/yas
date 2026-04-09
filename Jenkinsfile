@@ -190,30 +190,41 @@ pipeline {
 
     post {
         always {
+            // 1. JUnit: Tự động tạo Check "Tests" trên GitHub
             junit allowEmptyResults: true, testResults: '**/target/surefire-reports/*.xml'
 
+            // 2. Gitleaks: Tạo Check riêng tên là "Gitleaks Scan"
+            // Nó sẽ bôi đỏ trực tiếp nếu phát hiện secret
+            recordIssues(
+                tools: [sarifParser(pattern: 'gitleaks-report.sarif')],
+                id: 'gitleaks',
+                name: 'Gitleaks Scan',
+                skipPublishingChecks: false
+            )
+
+            // 3. Pipeline Summary: Tạo Check tổng hợp tình trạng build các service
             script {
                 def buildResult = currentBuild.currentResult ?: 'SUCCESS'
+                // Biến đổi trạng thái để GitHub Checks hiểu (SUCCESS/FAILURE/NEUTRAL...)
+                def conclusion = (buildResult == 'SUCCESS') ? 'SUCCESS' : 'FAILURE'
+                
                 def mySummary = """### Kết quả Pipeline Yas Monorepo
-                * **Người kích hoạt:** ${env.CHANGE_AUTHOR ?: 'Auto'}
-                * **Thời gian chạy:** ${currentBuild.durationString.replace(' and counting', '')}
-                * **Services đã build:** ${env.SERVICES_TO_BUILD}
-                """
-                def myText = "Xem chi tiết toàn bộ log tại [Jenkins Console](${env.BUILD_URL}console)."
+* **Trạng thái build:** ${buildResult}
+* **Người kích hoạt:** ${env.CHANGE_AUTHOR ?: 'Auto'}
+* **Thời gian chạy:** ${currentBuild.durationString.replace(' and counting', '')}
+* **Services đã xử lý:** `${env.SERVICES_TO_BUILD ?: 'None'}`
+"""
+                def myText = "### Links\n* [Chi tiết Jenkins Log](${env.BUILD_URL}console)\n* [Báo cáo JUnit](${env.BUILD_URL}testReport)"
 
-                publishChecks name: 'Yas Monorepo CI', 
+                publishChecks name: 'Yas Pipeline Summary', 
                     title: "Build ${buildResult}", 
                     summary: mySummary,
                     text: myText,
                     status: 'COMPLETED',
-                    conclusion: buildResult == 'SUCCESS' ? 'SUCCESS' : 'FAILURE'
+                    conclusion: conclusion
             }
+        }
 
-            recordIssues(
-                tools: [sarifParser(pattern: 'gitleaks-report.sarif')],
-                skipPublishingChecks: false
-            )
-        }   
         success {
             echo 'Gom tất cả báo cáo Coverage và kiểm tra ngưỡng 70%...'
             recordCoverage(
