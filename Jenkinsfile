@@ -15,52 +15,29 @@ pipeline {
                 cleanWs()
                 checkout scm
                 script {
-                    // def baseRef = env.GIT_PREVIOUS_SUCCESSFUL_COMMIT
-                    // if (!baseRef) {
-                    //     baseRef = sh(
-                    //         script: """
-                    //             git merge-base HEAD origin/main 2>/dev/null \
-                    //             || git merge-base HEAD origin/master 2>/dev/null \
-                    //             || git rev-parse HEAD^1 2>/dev/null \
-                    //             || echo ''
-                    //         """,
-                    //         returnStdout: true
-                    //     ).trim()
-                    // }
-                    sh 'git fetch --all --prune'
-                    sh 'git fetch --unshallow || true'
+                    sh '''
+                        git fetch --all --prune
+                        git fetch --unshallow || true
+                    '''
 
-                    def baseRef = sh(
-                        script: """
-                            git merge-base HEAD origin/main 2>/dev/null \
-                            || git merge-base HEAD origin/master 2>/dev/null \
-                            || echo ''
-                        """,
+                    def changedFiles = sh(
+                        script: "git diff --name-only origin/main...HEAD",
                         returnStdout: true
                     ).trim()
-                    env.GIT_BASE_REF = baseRef
 
-                    def changedFiles = ''
-                    if (baseRef) {
-                        changedFiles = sh(
-                            script: "git diff --name-only ${baseRef}}...HEAD 2>/dev/null || echo ''",
-                            returnStdout: true
-                        ).trim()
-                    }
-
-                    echo "Base ref: ${baseRef ?: '(none — build all)'}"
-                    echo "Changed files:\n${changedFiles ?: '(none — build all)'}"
+                    echo "Changed files:\n${changedFiles ?: '(none)'}"
 
                     def allServices = ['backoffice-bff', 'cart', 'customer', 'inventory', 'location',
-                                       'media', 'order', 'payment', 'payment-paypal', 'product',
-                                       'promotion', 'rating', 'recommendation', 'sampledata', 'search',
-                                       'storefront-bff', 'tax', 'webhook']
+                                    'media', 'order', 'payment', 'payment-paypal', 'product',
+                                    'promotion', 'rating', 'recommendation', 'sampledata', 'search',
+                                    'storefront-bff', 'tax', 'webhook']
 
                     def fileList = changedFiles ? changedFiles.split('\n') as List : []
+
                     def commonChanged = fileList.any { it.startsWith('common-library/') }
 
                     def servicesToBuild
-                    if (!baseRef || commonChanged) {
+                    if (!changedFiles || commonChanged) {
                         servicesToBuild = allServices
                     } else {
                         servicesToBuild = allServices.findAll { svc ->
@@ -70,6 +47,11 @@ pipeline {
 
                     echo "Services to build: ${servicesToBuild}"
                     env.SERVICES_TO_BUILD = servicesToBuild.join(',')
+
+                    env.GIT_BASE_REF = sh(
+                        script: "git merge-base HEAD origin/main",
+                        returnStdout: true
+                    ).trim()
                 }
 
                 echo 'Workspace cleaned and initialized.'
@@ -80,11 +62,12 @@ pipeline {
             steps {
                 script {
                     def currentHead = sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
+
                     def logOpts = (env.GIT_BASE_REF && env.GIT_BASE_REF != currentHead) ? 
-                                  "${env.GIT_BASE_REF}..HEAD" : "-1"
-                    
+                                "${env.GIT_BASE_REF}..HEAD" : "-1"
+
                     echo "Gitleaks is scanning with range: ${logOpts}"
-                    
+
                     sh """
                         gitleaks detect --source . \
                         --log-opts="${logOpts}" \
