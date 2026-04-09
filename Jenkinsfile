@@ -109,9 +109,8 @@ pipeline {
                 snykSecurity(
                     snykInstallation: 'snyk-tool',
                     snykTokenId: 'snyk-token',
-                    targetFile: 'pom.xml',
                     failOnIssues: false,
-                    additionalArguments: '--all-projects --debug --org=thuonghong -Drevision=1.0-SNAPSHOT'
+                    additionalArguments: '--all-projects --debug'
                 )
             }
         }
