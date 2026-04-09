@@ -37,6 +37,7 @@ pipeline {
                         """,
                         returnStdout: true
                     ).trim()
+                    env.GIT_BASE_REF = baseRef
 
                     def changedFiles = ''
                     if (baseRef) {
@@ -77,7 +78,10 @@ pipeline {
         stage('Secret Scan (Gitleaks)') {
             steps {
                 script {
-                    def logOpts = env.GIT_BASE_REF ? "${env.GIT_BASE_REF}..HEAD" : "-1"
+                    def currentHead = sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
+                    def logOpts = (env.GIT_BASE_REF && env.GIT_BASE_REF != currentHead) ? 
+                                  "${env.GIT_BASE_REF}..HEAD" : "-1"
+                    
                     echo "Gitleaks is scanning with range: ${logOpts}"
                     
                     sh """
