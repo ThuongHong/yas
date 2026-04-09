@@ -102,6 +102,20 @@ pipeline {
             }
         }
 
+        // stage('Secret Scan (Gitleaks)') {
+        //     steps {
+        //         echo 'Running Gitleaks to detect secrets and credentials in source code...'
+        //         sh '''
+        //             gitleaks detect \
+        //             --source . \
+        //             --report-format json \
+        //             --report-path gitleaks-report.json \
+        //             --exit-code 0
+        //         '''
+        //         archiveArtifacts artifacts: 'gitleaks-report.json', allowEmptyArchive: true
+        //     }
+        // }
+
         stage('Security Scan (Snyk - Root)') {
             steps {
                 echo 'Running Snyk scan for entire monorepo...'
@@ -110,11 +124,11 @@ pipeline {
                     snykInstallation: 'snyk-tool',
                     snykTokenId: 'snyk-token',
                     failOnIssues: false,
-                    additionalArguments: '--all-projects --debug'
+                    additionalArguments: '--all-projects --maven-aggregate-project'
                 )
             }
         }
-    }
+    }ý 
 
     post {
         success {
@@ -136,8 +150,8 @@ pipeline {
 def buildService(String serviceName) {
     echo "--- Processing Service: ${serviceName} ---"
     
-    sh "mvn clean install -DskipTests -pl ${serviceName}"
-    sh "mvn test jacoco:report -pl ${serviceName}"
+    sh "mvn clean install -DskipTests -pl ${serviceName} -am"
+    sh "mvn test jacoco:report -pl ${serviceName} -am"
 
     // snykSecurity(
     //     snykInstallation: 'snyk-tool',
