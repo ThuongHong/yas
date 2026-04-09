@@ -130,7 +130,8 @@ def buildService(String serviceName) {
         snykInstallation: 'snyk-tool',
         snykTokenId: 'snyk-token',
         targetFile: "${serviceName}/pom.xml",
-        failOnIssues: false
+        failOnIssues: false,
+        additionalArguments: '--debug'
     )
 
     withSonarQubeEnv('yas') {
