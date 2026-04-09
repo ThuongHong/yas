@@ -67,6 +67,8 @@ pipeline {
             steps {
                 echo 'Running Gitleaks to detect secrets and credentials in source code...'
                 sh '''
+                    git fetch origin main
+
                     gitleaks detect --source . \
                     --log-opts="origin/main..HEAD" \
                     --report-format sarif \
