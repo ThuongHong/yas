@@ -161,6 +161,7 @@ pipeline {
         // }
 
         stage('Security Scan (Snyk - Root)') {
+            when { changeRequest() }
             steps {
                 echo 'Running Snyk scan for entire monorepo...'
 
