@@ -124,7 +124,7 @@ pipeline {
                     snykInstallation: 'snyk-tool',
                     snykTokenId: 'snyk-token',
                     failOnIssues: false,
-                    additionalArguments: '--all-projects --maven-aggregate-project'
+                    additionalArguments: '--all-projects --maven-aggregate-project --no-wrapper'
                 )
             }
         }
@@ -156,9 +156,8 @@ def buildService(String serviceName) {
     // snykSecurity(
     //     snykInstallation: 'snyk-tool',
     //     snykTokenId: 'snyk-token',
-    //     targetFile: "${serviceName}/pom.xml",
+    //     targetFile: "${serviceName}",
     //     failOnIssues: false,
-    //     additionalArguments: '--debug --org=thuonghong -Drevision=1.0-SNAPSHOT'
     // )
 
     withSonarQubeEnv('yas') {
