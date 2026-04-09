@@ -22,7 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * Payment provider service.
  */
-@Slf4j // testtt
+@Slf4j // testttt
 @Service
 public class PaymentProviderService {
 
