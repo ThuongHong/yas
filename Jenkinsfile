@@ -27,147 +27,75 @@ pipeline {
         stage('Microservices Pipelines') {
             parallel {
                 stage('Backoffice-BFF') {
-                    when { 
-                        expression { 
-                           return hasChanges('common-library/**') || hasChanges('backoffice-bff/**') 
-                        }
-                    }
+                    when { anyOf { changeset 'common-library/**'; changeset 'backoffice-bff/**' } }
                     steps { buildService('backoffice-bff') }
                 }
                 stage('Cart') {
-                    when {
-                        expression {
-                            return hasChanges('common-library/**') || hasChanges('cart/**')
-                        }
-                    }
+                    when { anyOf { changeset 'common-library/**'; changeset 'cart/**' } }
                     steps { buildService('cart') }
                 }
                 stage('Customer') {
-                    when {
-                        expression {
-                            return hasChanges('common-library/**') || hasChanges('customer/**')
-                        }
-                    }
+                    when { anyOf { changeset 'common-library/**'; changeset 'customer/**' } }
                     steps { buildService('customer') }
                 }
                 stage('Inventory') {
-                    when {
-                        expression {
-                            return hasChanges('common-library/**') || hasChanges('inventory/**')
-                        }
-                    }
+                    when { anyOf { changeset 'common-library/**'; changeset 'inventory/**' } }
                     steps { buildService('inventory') }
                 }
                 stage('Location') {
-                    when {
-                        expression {
-                            return hasChanges('common-library/**') || hasChanges('location/**')
-                        }
-                    }
+                    when { anyOf { changeset 'common-library/**'; changeset 'location/**' } }
                     steps { buildService('location') }
                 }
                 stage('Media') {
-                    when {
-                        expression {
-                            return hasChanges('common-library/**') || hasChanges('media/**')
-                        }
-                    }
+                    when { anyOf { changeset 'common-library/**'; changeset 'media/**' } }
                     steps { buildService('media') }
                 }
                 stage('Order') {
-                    when {
-                        expression {
-                            return hasChanges('common-library/**') || hasChanges('order/**')
-                        }
-                    }
+                    when { anyOf { changeset 'common-library/**'; changeset 'order/**' } }
                     steps { buildService('order') }
                 }
                 stage('Payment') {
-                    when {
-                        expression {
-                            return hasChanges('common-library/**') || hasChanges('payment/**')
-                        }
-                    }
+                    when { anyOf { changeset 'common-library/**'; changeset 'payment/**' } }
                     steps { buildService('payment') }
                 }
                 stage('Payment-Paypal') {
-                    when {
-                        expression {
-                            return hasChanges('common-library/**') || hasChanges('payment-paypal/**')
-                        }
-                    }
+                    when { anyOf { changeset 'common-library/**'; changeset 'payment-paypal/**' } }
                     steps { buildService('payment-paypal') }
                 }
                 stage('Product') {
-                    when {
-                        expression {
-                            return hasChanges('common-library/**') || hasChanges('product/**')
-                        }
-                    }
+                    when { anyOf { changeset 'common-library/**'; changeset 'product/**' } }
                     steps { buildService('product') }
                 }
                 stage('Promotion') {
-                    when {
-                        expression {
-                            return hasChanges('common-library/**') || hasChanges('promotion/**')
-                        }
-                    }
+                    when { anyOf { changeset 'common-library/**'; changeset 'promotion/**' } }
                     steps { buildService('promotion') }
                 }
                 stage('Rating') {
-                    when {
-                        expression {
-                            return hasChanges('common-library/**') || hasChanges('rating/**')
-                        }
-                    }
+                    when { anyOf { changeset 'common-library/**'; changeset 'rating/**' } }
                     steps { buildService('rating') }
                 }
                 stage('Recommendation') {
-                    when {
-                        expression {
-                            return hasChanges('common-library/**') || hasChanges('recommendation/**')
-                        }
-                    }
+                    when { anyOf { changeset 'common-library/**'; changeset 'recommendation/**' } }
                     steps { buildService('recommendation') }
                 }
                 stage('Sampledata') {
-                    when {
-                        expression {
-                            return hasChanges('common-library/**') || hasChanges('sampledata/**')
-                        }
-                    }
+                    when { anyOf { changeset 'common-library/**'; changeset 'sampledata/**' } }
                     steps { buildService('sampledata') }
                 }
                 stage('Search') {
-                    when {
-                        expression {
-                            return hasChanges('common-library/**') || hasChanges('search/**')
-                        }
-                    }
+                    when { anyOf { changeset 'common-library/**'; changeset 'search/**' } }
                     steps { buildService('search') }
                 }
                 stage('Storefront-BFF') {
-                    when {
-                        expression {
-                            return hasChanges('common-library/**') || hasChanges('storefront-bff/**')
-                        }
-                    }
+                    when { anyOf { changeset 'common-library/**'; changeset 'storefront-bff/**' } }
                     steps { buildService('storefront-bff') }
                 }
                 stage('Tax') {
-                    when {
-                        expression {
-                            return hasChanges('common-library/**') || hasChanges('tax/**')
-                        }
-                    }
+                    when { anyOf { changeset 'common-library/**'; changeset 'tax/**' } }
                     steps { buildService('tax') }
                 }
                 stage('Webhook') {
-                    when {
-                        expression {
-                            return hasChanges('common-library/**') || hasChanges('webhook/**')
-                        }
-                    }
+                    when { anyOf { changeset 'common-library/**'; changeset 'webhook/**' } }
                     steps { buildService('webhook') }
                 }
             }
