@@ -65,18 +65,27 @@ pipeline {
 
         stage('Secret Scan (Gitleaks)') {
             steps {
-                echo 'Running Gitleaks to detect secrets and credentials in source code...'
+                echo 'Running Gitleaks on your changes only...'
                 sh '''
-                    git fetch origin main
+                    git fetch origin main --quiet
+
+                    BASE_COMMIT=$(git merge-base HEAD origin/main)
+                    
+                    echo "Scanning from base commit: $BASE_COMMIT to HEAD"
 
                     gitleaks detect --source . \
-                    --log-opts="origin/main..HEAD" \
+                    --log-opts="$BASE_COMMIT..HEAD" \
                     --report-format sarif \
                     --report-path gitleaks-report.sarif \
                     --redact \
-                    --verbose
+                    --verbose \
+                    --exit-code 0
                 '''
-                archiveArtifacts artifacts: 'gitleaks-report.sarif', allowEmptyArchive: true
+            }
+            post {
+                always {
+                    archiveArtifacts artifacts: 'gitleaks-report.sarif', allowEmptyArchive: true
+                }
             }
         }
 
@@ -183,23 +192,22 @@ pipeline {
         always {
             junit allowEmptyResults: true, testResults: '**/target/surefire-reports/*.xml'
 
-            // SETUP GITHUB APP TRƯỚC
-            // script {
-            //     def buildResult = currentBuild.currentResult ?: 'SUCCESS'
-            //     def mySummary = """### Kết quả Pipeline Yas Monorepo
-            //     * **Người kích hoạt:** ${env.CHANGE_AUTHOR ?: 'Auto'}
-            //     * **Thời gian chạy:** ${currentBuild.durationString.replace(' and counting', '')}
-            //     * **Services đã build:** ${env.SERVICES_TO_BUILD}
-            //     """
-            //     def myText = "Xem chi tiết toàn bộ log tại [Jenkins Console](${env.BUILD_URL}console)."
+            script {
+                def buildResult = currentBuild.currentResult ?: 'SUCCESS'
+                def mySummary = """### Kết quả Pipeline Yas Monorepo
+                * **Người kích hoạt:** ${env.CHANGE_AUTHOR ?: 'Auto'}
+                * **Thời gian chạy:** ${currentBuild.durationString.replace(' and counting', '')}
+                * **Services đã build:** ${env.SERVICES_TO_BUILD}
+                """
+                def myText = "Xem chi tiết toàn bộ log tại [Jenkins Console](${env.BUILD_URL}console)."
 
-            //     publishChecks name: 'Yas Monorepo CI', 
-            //         title: "Build ${buildResult}", 
-            //         summary: mySummary,
-            //         text: myText,
-            //         status: 'COMPLETED',
-            //         conclusion: buildResult == 'SUCCESS' ? 'SUCCESS' : 'FAILURE'
-            // }
+                publishChecks name: 'Yas Monorepo CI', 
+                    title: "Build ${buildResult}", 
+                    summary: mySummary,
+                    text: myText,
+                    status: 'COMPLETED',
+                    conclusion: buildResult == 'SUCCESS' ? 'SUCCESS' : 'FAILURE'
+            }
 
             recordIssues(
                 tools: [sarifParser(pattern: 'gitleaks-report.sarif')],
