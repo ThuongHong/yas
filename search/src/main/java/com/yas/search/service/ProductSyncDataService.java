@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.util.UriComponentsBuilder;
 
-@Service // testttttttttttttTTs
+@Service // testttttttttttttTTst
 @RequiredArgsConstructor
 public class ProductSyncDataService {
 

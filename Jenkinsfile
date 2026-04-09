@@ -124,7 +124,8 @@ pipeline {
                     snykInstallation: 'snyk-tool',
                     snykTokenId: 'snyk-token',
                     failOnIssues: false,
-                    additionalArguments: '--all-projects --maven-aggregate-project --no-wrapper'
+                    targetFile: 'pom.xml',
+                    additionalArguments: '--maven-aggregate-project'
                 )
             }
         }
