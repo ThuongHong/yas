@@ -14,67 +14,62 @@ pipeline {
             steps {
                 cleanWs()
                 checkout scm
-                // script {
-                //     def baseRef = env.GIT_PREVIOUS_SUCCESSFUL_COMMIT
-                //     if (!baseRef) {
-                //         baseRef = sh(
-                //             script: """
-                //                 git merge-base HEAD origin/main 2>/dev/null \
-                //                 || git merge-base HEAD origin/master 2>/dev/null \
-                //                 || git rev-parse HEAD^1 2>/dev/null \
-                //                 || echo ''
-                //             """,
-                //             returnStdout: true
-                //         ).trim()
-                //     }
-
-                //     def changedFiles = ''
-                //     if (baseRef) {
-                //         changedFiles = sh(
-                //             script: "git diff --name-only ${baseRef} HEAD 2>/dev/null || echo ''",
-                //             returnStdout: true
-                //         ).trim()
-                //     }
-
-                //     echo "Base ref: ${baseRef ?: '(none — build all)'}"
-                //     echo "Changed files:\n${changedFiles ?: '(none — build all)'}"
-
-                //     def allServices = ['backoffice-bff', 'cart', 'customer', 'inventory', 'location',
-                //                        'media', 'order', 'payment', 'payment-paypal', 'product',
-                //                        'promotion', 'rating', 'recommendation', 'sampledata', 'search',
-                //                        'storefront-bff', 'tax', 'webhook']
-
-                //     def fileList = changedFiles ? changedFiles.split('\n') as List : []
-                //     def commonChanged = fileList.any { it.startsWith('common-library/') }
-
-                //     def servicesToBuild
-                //     if (!baseRef || commonChanged) {
-                //         servicesToBuild = allServices
-                //     } else {
-                //         servicesToBuild = allServices.findAll { svc ->
-                //             fileList.any { it.startsWith("${svc}/") }
-                //         }
-                //     }
-
-                //     echo "Services to build: ${servicesToBuild}"
-                //     env.SERVICES_TO_BUILD = servicesToBuild.join(',')
-                // }
                 script {
+                    // def baseRef = env.GIT_PREVIOUS_SUCCESSFUL_COMMIT
+                    // if (!baseRef) {
+                    //     baseRef = sh(
+                    //         script: """
+                    //             git merge-base HEAD origin/main 2>/dev/null \
+                    //             || git merge-base HEAD origin/master 2>/dev/null \
+                    //             || git rev-parse HEAD^1 2>/dev/null \
+                    //             || echo ''
+                    //         """,
+                    //         returnStdout: true
+                    //     ).trim()
+                    // }
                     sh 'git fetch --all --prune'
 
                     def baseRef = sh(
-                        script: "git merge-base HEAD origin/main",
+                        script: """
+                            git merge-base HEAD origin/main 2>/dev/null \
+                            || git merge-base HEAD origin/master 2>/dev/null \
+                            || echo ''
+                        """,
                         returnStdout: true
                     ).trim()
 
-                    def changedFiles = sh(
-                        script: "git diff --name-only ${baseRef} HEAD",
-                        returnStdout: true
-                    ).trim()
+                    def changedFiles = ''
+                    if (baseRef) {
+                        changedFiles = sh(
+                            script: "git diff --name-only ${baseRef} HEAD 2>/dev/null || echo ''",
+                            returnStdout: true
+                        ).trim()
+                    }
 
-                    echo "Base ref: ${baseRef}"
-                    echo "Changed files:\n${changedFiles ?: '(none)'}"
+                    echo "Base ref: ${baseRef ?: '(none — build all)'}"
+                    echo "Changed files:\n${changedFiles ?: '(none — build all)'}"
+
+                    def allServices = ['backoffice-bff', 'cart', 'customer', 'inventory', 'location',
+                                       'media', 'order', 'payment', 'payment-paypal', 'product',
+                                       'promotion', 'rating', 'recommendation', 'sampledata', 'search',
+                                       'storefront-bff', 'tax', 'webhook']
+
+                    def fileList = changedFiles ? changedFiles.split('\n') as List : []
+                    def commonChanged = fileList.any { it.startsWith('common-library/') }
+
+                    def servicesToBuild
+                    if (!baseRef || commonChanged) {
+                        servicesToBuild = allServices
+                    } else {
+                        servicesToBuild = allServices.findAll { svc ->
+                            fileList.any { it.startsWith("${svc}/") }
+                        }
+                    }
+
+                    echo "Services to build: ${servicesToBuild}"
+                    env.SERVICES_TO_BUILD = servicesToBuild.join(',')
                 }
+
                 echo 'Workspace cleaned and initialized.'
             }
         }
