@@ -28,75 +28,75 @@ pipeline {
         stage('Microservices Pipelines') {
             parallel {
                 stage('Backoffice-BFF') {
-                    when { anyOf { changeset 'common-library/**'; changeset 'backoffice-bff/**' } }
+                    when { anyOf { expression { currentBuild.previousBuild == null }; changeset 'common-library/**'; changeset 'backoffice-bff/**' } }
                     steps { buildService('backoffice-bff') }
                 }
                 stage('Cart') {
-                    when { anyOf { changeset 'common-library/**'; changeset 'cart/**' } }
+                    when { anyOf { expression { currentBuild.previousBuild == null }; changeset 'common-library/**'; changeset 'cart/**' } }
                     steps { buildService('cart') }
                 }
                 stage('Customer') {
-                    when { anyOf { changeset 'common-library/**'; changeset 'customer/**' } }
+                    when { anyOf { expression { currentBuild.previousBuild == null }; changeset 'common-library/**'; changeset 'customer/**' } }
                     steps { buildService('customer') }
                 }
                 stage('Inventory') {
-                    when { anyOf { changeset 'common-library/**'; changeset 'inventory/**' } }
+                    when { anyOf { expression { currentBuild.previousBuild == null }; changeset 'common-library/**'; changeset 'inventory/**' } }
                     steps { buildService('inventory') }
                 }
                 stage('Location') {
-                    when { anyOf { changeset 'common-library/**'; changeset 'location/**' } }
+                    when { anyOf { expression { currentBuild.previousBuild == null }; changeset 'common-library/**'; changeset 'location/**' } }
                     steps { buildService('location') }
                 }
                 stage('Media') {
-                    when { anyOf { changeset 'common-library/**'; changeset 'media/**' } }
+                    when { anyOf { expression { currentBuild.previousBuild == null }; changeset 'common-library/**'; changeset 'media/**' } }
                     steps { buildService('media') }
                 }
                 stage('Order') {
-                    when { anyOf { changeset 'common-library/**'; changeset 'order/**' } }
+                    when { anyOf { expression { currentBuild.previousBuild == null }; changeset 'common-library/**'; changeset 'order/**' } }
                     steps { buildService('order') }
                 }
                 stage('Payment') {
-                    when { anyOf { changeset 'common-library/**'; changeset 'payment/**' } }
+                    when { anyOf { expression { currentBuild.previousBuild == null }; changeset 'common-library/**'; changeset 'payment/**' } }
                     steps { buildService('payment') }
                 }
                 stage('Payment-Paypal') {
-                    when { anyOf { changeset 'common-library/**'; changeset 'payment-paypal/**' } }
+                    when { anyOf { expression { currentBuild.previousBuild == null }; changeset 'common-library/**'; changeset 'payment-paypal/**' } }
                     steps { buildService('payment-paypal') }
                 }
                 stage('Product') {
-                    when { anyOf { changeset 'common-library/**'; changeset 'product/**' } }
+                    when { anyOf { expression { currentBuild.previousBuild == null }; changeset 'common-library/**'; changeset 'product/**' } }
                     steps { buildService('product') }
                 }
                 stage('Promotion') {
-                    when { anyOf { changeset 'common-library/**'; changeset 'promotion/**' } }
+                    when { anyOf { expression { currentBuild.previousBuild == null }; changeset 'common-library/**'; changeset 'promotion/**' } }
                     steps { buildService('promotion') }
                 }
                 stage('Rating') {
-                    when { anyOf { changeset 'common-library/**'; changeset 'rating/**' } }
+                    when { anyOf { expression { currentBuild.previousBuild == null }; changeset 'common-library/**'; changeset 'rating/**' } }
                     steps { buildService('rating') }
                 }
                 stage('Recommendation') {
-                    when { anyOf { changeset 'common-library/**'; changeset 'recommendation/**' } }
+                    when { anyOf { expression { currentBuild.previousBuild == null }; changeset 'common-library/**'; changeset 'recommendation/**' } }
                     steps { buildService('recommendation') }
                 }
                 stage('Sampledata') {
-                    when { anyOf { changeset 'common-library/**'; changeset 'sampledata/**' } }
+                    when { anyOf { expression { currentBuild.previousBuild == null }; changeset 'common-library/**'; changeset 'sampledata/**' } }
                     steps { buildService('sampledata') }
                 }
                 stage('Search') {
-                    when { anyOf { changeset 'common-library/**'; changeset 'search/**' } }
+                    when { anyOf { expression { currentBuild.previousBuild == null }; changeset 'common-library/**'; changeset 'search/**' } }
                     steps { buildService('search') }
                 }
                 stage('Storefront-BFF') {
-                    when { anyOf { changeset 'common-library/**'; changeset 'storefront-bff/**' } }
+                    when { anyOf { expression { currentBuild.previousBuild == null }; changeset 'common-library/**'; changeset 'storefront-bff/**' } }
                     steps { buildService('storefront-bff') }
                 }
                 stage('Tax') {
-                    when { anyOf { changeset 'common-library/**'; changeset 'tax/**' } }
+                    when { anyOf { expression { currentBuild.previousBuild == null }; changeset 'common-library/**'; changeset 'tax/**' } }
                     steps { buildService('tax') }
                 }
                 stage('Webhook') {
-                    when { anyOf { changeset 'common-library/**'; changeset 'webhook/**' } }
+                    when { anyOf { expression { currentBuild.previousBuild == null }; changeset 'common-library/**'; changeset 'webhook/**' } }
                     steps { buildService('webhook') }
                 }
             }
