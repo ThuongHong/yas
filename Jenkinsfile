@@ -63,6 +63,19 @@ pipeline {
             }
         }
 
+        stage('Secret Scan (Gitleaks)') {
+            steps {
+                echo 'Running Gitleaks to detect secrets and credentials in source code...'
+                sh '''
+                    gitleaks detect \
+                    --source . \
+                    --report-format json \
+                    --report-path gitleaks-report.json
+                '''
+                archiveArtifacts artifacts: 'gitleaks-report.json', allowEmptyArchive: true
+            }
+        }
+
         stage('Global Dependencies Setup') {
             steps {
                 sh 'mvn clean install -DskipTests -pl common-library -am'
@@ -146,20 +159,6 @@ pipeline {
             }
         }
 
-        // stage('Secret Scan (Gitleaks)') {
-        //     steps {
-        //         echo 'Running Gitleaks to detect secrets and credentials in source code...'
-        //         sh '''
-        //             gitleaks detect \
-        //             --source . \
-        //             --report-format json \
-        //             --report-path gitleaks-report.json \
-        //             --exit-code 0
-        //         '''
-        //         archiveArtifacts artifacts: 'gitleaks-report.json', allowEmptyArchive: true
-        //     }
-        // }
-
         stage('Security Scan (Snyk - Root)') {
             when { changeRequest() }
             steps {
@@ -180,9 +179,27 @@ pipeline {
         always {
             junit allowEmptyResults: true, testResults: '**/target/surefire-reports/*.xml'
 
-            recordIssues(
-                tools: [junitParser(pattern: '**/target/surefire-reports/*.xml')],
-                skipPublishingChecks: false
+            // SETUP GITHUB APP TRƯỚC
+            // script {
+            //     def buildResult = currentBuild.currentResult ?: 'SUCCESS'
+            //     def mySummary = """### Kết quả Pipeline Yas Monorepo
+            //     * **Người kích hoạt:** ${env.CHANGE_AUTHOR ?: 'Auto'}
+            //     * **Thời gian chạy:** ${currentBuild.durationString.replace(' and counting', '')}
+            //     * **Services đã build:** ${env.SERVICES_TO_BUILD}
+            //     """
+            //     def myText = "Xem chi tiết toàn bộ log tại [Jenkins Console](${env.BUILD_URL}console)."
+
+            //     publishChecks name: 'Yas Monorepo CI', 
+            //         title: "Build ${buildResult}", 
+            //         summary: mySummary,
+            //         text: myText,
+            //         status: 'COMPLETED',
+            //         conclusion: buildResult == 'SUCCESS' ? 'SUCCESS' : 'FAILURE'
+            // }
+
+            // recordIssues(
+            //     tools: [sarifParser(pattern: 'gitleaks-report.sarif')],
+            //     skipPublishingChecks: false
             )
         }   
         success {
