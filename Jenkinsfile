@@ -136,8 +136,8 @@ pipeline {
 def buildService(String serviceName) {
     echo "--- Processing Service: ${serviceName} ---"
     
-    sh "mvn clean install -DskipTests -pl ${serviceName} -am"
-    sh "mvn test jacoco:report -pl ${serviceName} -am"
+    sh "mvn clean install -DskipTests -pl ${serviceName}"
+    sh "mvn test jacoco:report -pl ${serviceName}"
 
     // snykSecurity(
     //     snykInstallation: 'snyk-tool',
@@ -151,10 +151,9 @@ def buildService(String serviceName) {
         sh """
             mvn sonar:sonar \
             -pl ${serviceName} \
-            -am \
             -Dsonar.projectKey=thuonghong_yas-${serviceName} \
             -Dsonar.projectName=yas-${serviceName} \
-            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
+            -Dsonar.coverage.jacoco.xmlReportPaths=${serviceName}/target/site/jacoco/jacoco.xml
         """
     }
 }
