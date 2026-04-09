@@ -14,6 +14,7 @@ pipeline {
             steps {
                 cleanWs()
                 checkout scm
+                sh "find . -name mvnw -exec chmod +x {} \\;"
                 echo 'Workspace cleaned and initialized.'
             }
         }
