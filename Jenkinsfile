@@ -175,7 +175,49 @@ pipeline {
         }
     }
 
+    // post {
+    //     success {
+    //         echo 'Gom tất cả báo cáo Coverage và kiểm tra ngưỡng 70%...'
+    //         recordCoverage(
+    //             tools: [[parser: 'JACOCO', pattern: '**/target/site/jacoco/jacoco.xml']],
+    //             sourceDirectories: getSourcePaths(),
+    //             qualityGates: [
+    //                 [threshold: 70.0, metric: 'LINE', baseline: 'PROJECT', criticality: 'FAILURE']
+    //             ]
+    //         )
+    //     }
+    //     always {
+    //         junit allowEmptyResults: true, testResults: '**/target/surefire-reports/*.xml'
+    //     }
+    // }
     post {
+        always {
+            junit allowEmptyResults: true, testResults: '**/target/surefire-reports/*.xml'
+
+            script {
+                def buildResult = currentBuild.currentResult ?: 'SUCCESS'
+                
+                def mySummary = """### Kết quả Pipeline Yas Monorepo
+                * **Người kích hoạt:** ${env.CHANGE_AUTHOR ?: 'Auto'}
+                * **Thời gian chạy:** ${currentBuild.durationString.replace(' and counting', '')}
+                * **Services đã build:** ${env.SERVICES_TO_BUILD}
+                """
+                
+                def myText = "Xem chi tiết toàn bộ log tại [Jenkins Console](${env.BUILD_URL}console)."
+
+                publishChecks name: 'Yas Monorepo CI', 
+                    title: "Build ${buildResult}", 
+                    summary: mySummary,
+                    text: myText,
+                    status: 'COMPLETED',
+                    conclusion: buildResult == 'SUCCESS' ? 'SUCCESS' : 'FAILURE'
+            }
+
+            recordIssues(
+                tools: [junitParser(pattern: '**/target/surefire-reports/*.xml')],
+                skipPublishingChecks: false
+            )
+        }   
         success {
             echo 'Gom tất cả báo cáo Coverage và kiểm tra ngưỡng 70%...'
             recordCoverage(
@@ -185,9 +227,6 @@ pipeline {
                     [threshold: 70.0, metric: 'LINE', baseline: 'PROJECT', criticality: 'FAILURE']
                 ]
             )
-        }
-        always {
-            junit allowEmptyResults: true, testResults: '**/target/surefire-reports/*.xml'
         }
     }
 }
