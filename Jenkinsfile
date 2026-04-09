@@ -64,18 +64,21 @@ pipeline {
         }
 
         stage('Secret Scan (Gitleaks)') {
-            when { expression { env.GIT_BASE_REF } }
             steps {
-                echo "Smart Scanning from ${env.GIT_BASE_REF} to HEAD..."
-                sh """
-                    gitleaks detect --source . \
-                    --log-opts="${env.GIT_BASE_REF}..HEAD" \
-                    --report-format sarif \
-                    --report-path gitleaks-report.sarif \
-                    --redact \
-                    --verbose \
-                    --exit-code 0
-                """
+                script {
+                    def logOpts = env.GIT_BASE_REF ? "${env.GIT_BASE_REF}..HEAD" : "-1"
+                    echo "Gitleaks is scanning with range: ${logOpts}"
+                    
+                    sh """
+                        gitleaks detect --source . \
+                        --log-opts="${logOpts}" \
+                        --report-format sarif \
+                        --report-path gitleaks-report.sarif \
+                        --redact \
+                        --verbose \
+                        --exit-code 0
+                    """
+                }
             }
             post {
                 always {
@@ -191,7 +194,7 @@ pipeline {
             // 2. Gitleaks: Tạo Check riêng tên là "Gitleaks Scan"
             // Nó sẽ bôi đỏ trực tiếp nếu phát hiện secret
             recordIssues(
-                tools: [sarifParser(pattern: 'gitleaks-report.sarif')],
+                tools: [sarif(pattern: 'gitleaks-report.sarif')],
                 id: 'gitleaks',
                 name: 'Gitleaks Scan',
                 skipPublishingChecks: false
