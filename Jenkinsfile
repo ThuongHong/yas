@@ -77,20 +77,13 @@ pipeline {
 
         stage('Secret Scan (Gitleaks)') {
             steps {
-                script {
-                    def logOpts = env.GIT_BASE_REF ? "${env.GIT_BASE_REF}..HEAD" : "-1"
-
-                    echo "Gitleaks scanning with log-opts: ${logOpts}"
-
-                    sh """
-                        gitleaks detect --source . \
-                        --log-opts="${logOpts}" \
-                        --report-format sarif \
-                        --report-path gitleaks-report.sarif \
-                        --redact \
-                        --exit-code 0
-                    """
-                }
+                sh """
+                    gitleaks detect --source . \
+                    --report-format sarif \
+                    --report-path gitleaks-report.sarif \
+                    --redact \
+                    --exit-code 0
+                """
             }
             post {
                 always {
