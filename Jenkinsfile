@@ -28,80 +28,146 @@ pipeline {
             parallel {
                 stage('Backoffice-BFF') {
                     when { 
-                        anyOf {
-                            changeset 'common-library/**'
-                            changeset 'backoffice-bff/**'
-                            expression { env.BUILD_NUMBER == '1' } 
-                        } 
+                        expression { 
+                           return hasChanges('common-library/**') || hasChanges('backoffice-bff/**') 
+                        }
                     }
                     steps { buildService('backoffice-bff') }
                 }
                 stage('Cart') {
-                    when { anyOf { changeset 'common-library/**'; changeset 'cart/**'; expression { env.BUILD_NUMBER == '1' } } }
+                    when {
+                        expression {
+                            return hasChanges('common-library/**') || hasChanges('cart/**')
+                        }
+                    }
                     steps { buildService('cart') }
                 }
                 stage('Customer') {
-                    when { anyOf { changeset 'common-library/**'; changeset 'customer/**'; expression { env.BUILD_NUMBER == '1' } } }
+                    when {
+                        expression {
+                            return hasChanges('common-library/**') || hasChanges('customer/**')
+                        }
+                    }
                     steps { buildService('customer') }
                 }
                 stage('Inventory') {
-                    when { anyOf { changeset 'common-library/**'; changeset 'inventory/**'; expression { env.BUILD_NUMBER == '1' } } }
+                    when {
+                        expression {
+                            return hasChanges('common-library/**') || hasChanges('inventory/**')
+                        }
+                    }
                     steps { buildService('inventory') }
                 }
                 stage('Location') {
-                    when { anyOf { changeset 'common-library/**'; changeset 'location/**'; expression { env.BUILD_NUMBER == '1' } } }
+                    when {
+                        expression {
+                            return hasChanges('common-library/**') || hasChanges('location/**')
+                        }
+                    }
                     steps { buildService('location') }
                 }
                 stage('Media') {
-                    when { anyOf { changeset 'common-library/**'; changeset 'media/**'; expression { env.BUILD_NUMBER == '1' } } }
+                    when {
+                        expression {
+                            return hasChanges('common-library/**') || hasChanges('media/**')
+                        }
+                    }
                     steps { buildService('media') }
                 }
                 stage('Order') {
-                    when { anyOf { changeset 'common-library/**'; changeset 'order/**'; expression { env.BUILD_NUMBER == '1' } } }
+                    when {
+                        expression {
+                            return hasChanges('common-library/**') || hasChanges('order/**')
+                        }
+                    }
                     steps { buildService('order') }
                 }
                 stage('Payment') {
-                    when { anyOf { changeset 'common-library/**'; changeset 'payment/**'; expression { env.BUILD_NUMBER == '1' } } }
+                    when {
+                        expression {
+                            return hasChanges('common-library/**') || hasChanges('payment/**')
+                        }
+                    }
                     steps { buildService('payment') }
                 }
                 stage('Payment-Paypal') {
-                    when { anyOf { changeset 'common-library/**'; changeset 'payment-paypal/**'; expression { env.BUILD_NUMBER == '1' } } }
+                    when {
+                        expression {
+                            return hasChanges('common-library/**') || hasChanges('payment-paypal/**')
+                        }
+                    }
                     steps { buildService('payment-paypal') }
                 }
                 stage('Product') {
-                    when { anyOf { changeset 'common-library/**'; changeset 'product/**'; expression { env.BUILD_NUMBER == '1' } } }
+                    when {
+                        expression {
+                            return hasChanges('common-library/**') || hasChanges('product/**')
+                        }
+                    }
                     steps { buildService('product') }
                 }
                 stage('Promotion') {
-                    when { anyOf { changeset 'common-library/**'; changeset 'promotion/**'; expression { env.BUILD_NUMBER == '1' } } }
+                    when {
+                        expression {
+                            return hasChanges('common-library/**') || hasChanges('promotion/**')
+                        }
+                    }
                     steps { buildService('promotion') }
                 }
                 stage('Rating') {
-                    when { anyOf { changeset 'common-library/**'; changeset 'rating/**'; expression { env.BUILD_NUMBER == '1' } } }
+                    when {
+                        expression {
+                            return hasChanges('common-library/**') || hasChanges('rating/**')
+                        }
+                    }
                     steps { buildService('rating') }
                 }
                 stage('Recommendation') {
-                    when { anyOf { changeset 'common-library/**'; changeset 'recommendation/**'; expression { env.BUILD_NUMBER == '1' } } }
+                    when {
+                        expression {
+                            return hasChanges('common-library/**') || hasChanges('recommendation/**')
+                        }
+                    }
                     steps { buildService('recommendation') }
                 }
                 stage('Sampledata') {
-                    when { anyOf { changeset 'common-library/**'; changeset 'sampledata/**'; expression { env.BUILD_NUMBER == '1' } } }
+                    when {
+                        expression {
+                            return hasChanges('common-library/**') || hasChanges('sampledata/**')
+                        }
+                    }
                     steps { buildService('sampledata') }
                 }
                 stage('Search') {
-                    when { anyOf { changeset 'common-library/**'; changeset 'search/**'; expression { env.BUILD_NUMBER == '1' } } }
+                    when {
+                        expression {
+                            return hasChanges('common-library/**') || hasChanges('search/**')
+                        }
+                    }
                     steps { buildService('search') }
                 }
                 stage('Storefront-BFF') {
-                    when { anyOf { changeset 'common-library/**'; changeset 'storefront-bff/**'; expression { env.BUILD_NUMBER == '1' } } }
+                    when {
+                        expression {
+                            return hasChanges('common-library/**') || hasChanges('storefront-bff/**')
+                        }
+                    }
                     steps { buildService('storefront-bff') }
                 }
                 stage('Tax') {
-                    when { anyOf { changeset 'common-library/**'; changeset 'tax/**'; expression { env.BUILD_NUMBER == '1' } } }
+                    when {
+                        expression {
+                            return hasChanges('common-library/**') || hasChanges('tax/**')
+                        }
+                    }
                     steps { buildService('tax') }
                 }
                 stage('Webhook') {
-                    when { anyOf { changeset 'common-library/**'; changeset 'webhook/**'; expression { env.BUILD_NUMBER == '1' } } }
+                    when {
+                        expression {
+                            return hasChanges('common-library/**') || hasChanges('webhook/**')
+                        }
+                    }
                     steps { buildService('webhook') }
                 }
             }
@@ -125,20 +191,25 @@ pipeline {
     }
 }
 
-// def buildService(String serviceName) {
-//     echo "--- Processing Service: ${serviceName} ---"
-//     sh "mvn install -DskipTests -pl ${serviceName} -am"
-//     sh "mvn test jacoco:report -pl ${serviceName} -am"
-//     // sh "mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl ${serviceName} -am"
-//     sh """
-//         mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-//         -pl ${serviceName} \
-//         -am \
-//         -Dsonar.projectKey=thuonghong_yas-${serviceName} \
-//         -Dsonar.projectName=yas-${serviceName} \
-//         -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
-//     """
-// }
+def hasChanges(String pattern) {
+    def branchName = env.BRANCH_NAME
+    
+    if (branchName == 'main' || branchName == 'develop') {
+        return anyOf { changeset pattern }
+    }
+
+    try {
+        def changedFiles = sh(
+            script: "git diff --name-only origin/main...HEAD", 
+            returnStdout: true
+        ).trim()
+        
+        return changedFiles.split('\n').any { it.matches("${pattern.replace('/**', '.*')}") }
+    } catch (Exception e) {
+        return true
+    }
+}
+
 def buildService(String serviceName) {
     echo "--- Processing Service: ${serviceName} ---"
     
