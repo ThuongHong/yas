@@ -191,21 +191,45 @@ pipeline {
     }
 }
 
-def hasChanges(String pattern) {
-    def branchName = env.BRANCH_NAME
-    
-    if (branchName == 'main' || branchName == 'develop') {
-        return anyOf { changeset pattern }
-    }
-
+def hasChanges(String servicePath) {
     try {
-        def changedFiles = sh(
-            script: "git diff --name-only origin/main...HEAD", 
+        def branch = env.BRANCH_NAME
+
+        // 🔹 CASE 1: main / develop → so với commit trước
+        if (branch == 'main' || branch == 'develop') {
+            def diff = sh(
+                script: "git diff --name-only HEAD~1 HEAD",
+                returnStdout: true
+            ).trim()
+
+            if (!diff) return false
+
+            return diff.split('\n').any { file ->
+                file.startsWith(servicePath)
+            }
+        }
+
+        // 🔹 CASE 2: branch thường → so với main (merge-base)
+        sh "git fetch origin main"
+
+        def base = sh(
+            script: "git merge-base HEAD origin/main",
             returnStdout: true
         ).trim()
-        
-        return changedFiles.split('\n').any { it.matches("${pattern.replace('/**', '.*')}") }
-    } catch (Exception e) {
+
+        def diff = sh(
+            script: "git diff --name-only ${base} HEAD",
+            returnStdout: true
+        ).trim()
+
+        if (!diff) return false
+
+        return diff.split('\n').any { file ->
+            file.startsWith(servicePath)
+        }
+
+    } catch (e) {
+        echo "Error detecting changes: ${e}"
         return true
     }
 }
