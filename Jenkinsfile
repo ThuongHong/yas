@@ -13,8 +13,8 @@ pipeline {
         stage('Initialize & Clean') {
             steps {
                 cleanWs()
-                checkout scm
-                sh "find . -name mvnw -exec chmod +x {} \\;"
+                checkout scmthuonghong
+                // sh "find . -name mvnw -exec chmod +x {} \\;"
                 echo 'Workspace cleaned and initialized.'
             }
         }
@@ -132,7 +132,7 @@ def buildService(String serviceName) {
         snykTokenId: 'snyk-token',
         targetFile: "${serviceName}/pom.xml",
         failOnIssues: false,
-        additionalArguments: '--debug'
+        additionalArguments: '--debug --org=thuonghong'
     )
 
     withSonarQubeEnv('yas') {
