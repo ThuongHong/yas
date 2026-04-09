@@ -22,7 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * Payment provider service.
  */
-@Slf4j//testt
+@Slf4j // testtt
 @Service
 public class PaymentProviderService {
 
@@ -34,12 +34,11 @@ public class PaymentProviderService {
     private final UpdatePaymentProviderMapper updatePaymentProviderMapper;
 
     public PaymentProviderService(
-        MediaService mediaService,
-        PaymentProviderMapper paymentProviderMapper,
-        CreatePaymentProviderMapper createPaymentProviderMapper,
-        UpdatePaymentProviderMapper updatePaymentProviderMapper,
-        PaymentProviderRepository paymentProviderRepository
-    ) {
+            MediaService mediaService,
+            PaymentProviderMapper paymentProviderMapper,
+            CreatePaymentProviderMapper createPaymentProviderMapper,
+            UpdatePaymentProviderMapper updatePaymentProviderMapper,
+            PaymentProviderRepository paymentProviderRepository) {
         this.mediaService = mediaService;
         this.paymentProviderMapper = paymentProviderMapper;
         this.createPaymentProviderMapper = createPaymentProviderMapper;
@@ -92,15 +91,14 @@ public class PaymentProviderService {
 
         final Map<Long, MediaVm> mediaVmMap = mediaService.getMediaVmMap(providers);
         return providers.stream()
-            .map(provider -> toPaymentProviderVm(provider, mediaVmMap))
-            .toList();
+                .map(provider -> toPaymentProviderVm(provider, mediaVmMap))
+                .toList();
     }
 
     private PaymentProvider findByIdOrElseThrow(String paymentProviderId) {
         return paymentProviderRepository.findById(paymentProviderId)
-            .orElseThrow(
-                () -> new NotFoundException(Constants.ErrorCode.PAYMENT_PROVIDER_NOT_FOUND, paymentProviderId)
-            );
+                .orElseThrow(
+                        () -> new NotFoundException(Constants.ErrorCode.PAYMENT_PROVIDER_NOT_FOUND, paymentProviderId));
     }
 
     private PaymentProviderVm toPaymentProviderVm(PaymentProvider provider, Map<Long, MediaVm> mediaVmMap) {
