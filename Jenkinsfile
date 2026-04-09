@@ -39,18 +39,25 @@ pipeline {
                     echo "Base ref: ${baseRef ?: '(none — build all)'}"
                     echo "Changed files:\n${changedFiles ?: '(none — build all)'}"
 
+                    def allServices = ['backoffice-bff', 'cart', 'customer', 'inventory', 'location',
+                                       'media', 'order', 'payment', 'payment-paypal', 'product',
+                                       'promotion', 'rating', 'recommendation', 'sampledata', 'search',
+                                       'storefront-bff', 'tax', 'webhook']
+
                     def fileList = changedFiles ? changedFiles.split('\n') as List : []
                     def commonChanged = fileList.any { it.startsWith('common-library/') }
 
-                    ['backoffice-bff', 'cart', 'customer', 'inventory', 'location',
-                     'media', 'order', 'payment', 'payment-paypal', 'product',
-                     'promotion', 'rating', 'recommendation', 'sampledata', 'search',
-                     'storefront-bff', 'tax', 'webhook'].each { svc ->
-                        def envKey = "BUILD_${svc.replace('-', '_').toUpperCase()}"
-                        def shouldBuild = !baseRef || commonChanged || fileList.any { it.startsWith("${svc}/") }
-                        env[envKey] = shouldBuild.toString()
-                        if (shouldBuild) echo "  → Will build: ${svc}"
+                    def servicesToBuild
+                    if (!baseRef || commonChanged) {
+                        servicesToBuild = allServices
+                    } else {
+                        servicesToBuild = allServices.findAll { svc ->
+                            fileList.any { it.startsWith("${svc}/") }
+                        }
                     }
+
+                    echo "Services to build: ${servicesToBuild}"
+                    env.SERVICES_TO_BUILD = servicesToBuild.join(',')
                 }
                 echo 'Workspace cleaned and initialized.'
             }
@@ -65,75 +72,75 @@ pipeline {
         stage('Microservices Pipelines') {
             parallel {
                 stage('Backoffice-BFF') {
-                    when { expression { env.BUILD_BACKOFFICE_BFF == 'true' } }
+                    when { expression { env.SERVICES_TO_BUILD.tokenize(',').contains('backoffice-bff') } }
                     steps { buildService('backoffice-bff') }
                 }
                 stage('Cart') {
-                    when { expression { env.BUILD_CART == 'true' } }
+                    when { expression { env.SERVICES_TO_BUILD.tokenize(',').contains('cart') } }
                     steps { buildService('cart') }
                 }
                 stage('Customer') {
-                    when { expression { env.BUILD_CUSTOMER == 'true' } }
+                    when { expression { env.SERVICES_TO_BUILD.tokenize(',').contains('customer') } }
                     steps { buildService('customer') }
                 }
                 stage('Inventory') {
-                    when { expression { env.BUILD_INVENTORY == 'true' } }
+                    when { expression { env.SERVICES_TO_BUILD.tokenize(',').contains('inventory') } }
                     steps { buildService('inventory') }
                 }
                 stage('Location') {
-                    when { expression { env.BUILD_LOCATION == 'true' } }
+                    when { expression { env.SERVICES_TO_BUILD.tokenize(',').contains('location') } }
                     steps { buildService('location') }
                 }
                 stage('Media') {
-                    when { expression { env.BUILD_MEDIA == 'true' } }
+                    when { expression { env.SERVICES_TO_BUILD.tokenize(',').contains('media') } }
                     steps { buildService('media') }
                 }
                 stage('Order') {
-                    when { expression { env.BUILD_ORDER == 'true' } }
+                    when { expression { env.SERVICES_TO_BUILD.tokenize(',').contains('order') } }
                     steps { buildService('order') }
                 }
                 stage('Payment') {
-                    when { expression { env.BUILD_PAYMENT == 'true' } }
+                    when { expression { env.SERVICES_TO_BUILD.tokenize(',').contains('payment') } }
                     steps { buildService('payment') }
                 }
                 stage('Payment-Paypal') {
-                    when { expression { env.BUILD_PAYMENT_PAYPAL == 'true' } }
+                    when { expression { env.SERVICES_TO_BUILD.tokenize(',').contains('payment-paypal') } }
                     steps { buildService('payment-paypal') }
                 }
                 stage('Product') {
-                    when { expression { env.BUILD_PRODUCT == 'true' } }
+                    when { expression { env.SERVICES_TO_BUILD.tokenize(',').contains('product') } }
                     steps { buildService('product') }
                 }
                 stage('Promotion') {
-                    when { expression { env.BUILD_PROMOTION == 'true' } }
+                    when { expression { env.SERVICES_TO_BUILD.tokenize(',').contains('promotion') } }
                     steps { buildService('promotion') }
                 }
                 stage('Rating') {
-                    when { expression { env.BUILD_RATING == 'true' } }
+                    when { expression { env.SERVICES_TO_BUILD.tokenize(',').contains('rating') } }
                     steps { buildService('rating') }
                 }
                 stage('Recommendation') {
-                    when { expression { env.BUILD_RECOMMENDATION == 'true' } }
+                    when { expression { env.SERVICES_TO_BUILD.tokenize(',').contains('recommendation') } }
                     steps { buildService('recommendation') }
                 }
                 stage('Sampledata') {
-                    when { expression { env.BUILD_SAMPLEDATA == 'true' } }
+                    when { expression { env.SERVICES_TO_BUILD.tokenize(',').contains('sampledata') } }
                     steps { buildService('sampledata') }
                 }
                 stage('Search') {
-                    when { expression { env.BUILD_SEARCH == 'true' } }
+                    when { expression { env.SERVICES_TO_BUILD.tokenize(',').contains('search') } }
                     steps { buildService('search') }
                 }
                 stage('Storefront-BFF') {
-                    when { expression { env.BUILD_STOREFRONT_BFF == 'true' } }
+                    when { expression { env.SERVICES_TO_BUILD.tokenize(',').contains('storefront-bff') } }
                     steps { buildService('storefront-bff') }
                 }
                 stage('Tax') {
-                    when { expression { env.BUILD_TAX == 'true' } }
+                    when { expression { env.SERVICES_TO_BUILD.tokenize(',').contains('tax') } }
                     steps { buildService('tax') }
                 }
                 stage('Webhook') {
-                    when { expression { env.BUILD_WEBHOOK == 'true' } }
+                    when { expression { env.SERVICES_TO_BUILD.tokenize(',').contains('webhook') } }
                     steps { buildService('webhook') }
                 }
             }
