@@ -27,10 +27,19 @@ pipeline {
                         returnStdout: true
                     ).trim()
 
+                    def currentHead = sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
+                    if (!baseRef || baseRef == currentHead) {
+                        baseRef = sh(
+                            script: "git rev-parse HEAD^1 2>/dev/null || echo ''",
+                            returnStdout: true
+                        ).trim()
+                        echo "On target branch — using HEAD^1: ${baseRef}"
+                    }
+
                     env.GIT_BASE_REF = baseRef
 
                     def changedFiles = ''
-                    if (env.GIT_BASE_REF && env.GIT_BASE_REF != sh(script: 'git rev-parse HEAD', returnStdout: true).trim()) {
+                    if (env.GIT_BASE_REF) {
                         changedFiles = sh(
                             script: "git diff --name-only ${env.GIT_BASE_REF} HEAD 2>/dev/null || echo ''",
                             returnStdout: true
