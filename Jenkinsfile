@@ -169,13 +169,13 @@ pipeline {
                 def buildResult = currentBuild.currentResult ?: 'SUCCESS'
                 def conclusion = (buildResult == 'SUCCESS') ? 'SUCCESS' : 'FAILURE'
                 
-                def mySummary = """### Kết quả Pipeline Yas Monorepo
-* **Trạng thái build:** ${buildResult}
-* **Người kích hoạt:** ${env.CHANGE_AUTHOR ?: 'Auto'}
-* **Thời gian chạy:** ${currentBuild.durationString.replace(' and counting', '')}
-* **Services đã xử lý:** `${env.SERVICES_TO_BUILD ?: 'None'}`
+                def mySummary = """### Yas Monorepo Pipeline Results
+* **Build Status:** ${buildResult}
+* **Triggered By:** ${env.CHANGE_AUTHOR ?: 'Auto'}
+* **Duration:** ${currentBuild.durationString.replace(' and counting', '')}
+* **Processed Services:** `${env.SERVICES_TO_BUILD ?: 'None'}`
 """
-                def myText = "### Links\n* [Chi tiết Jenkins Log](${env.BUILD_URL}console)\n* [Báo cáo JUnit](${env.BUILD_URL}testReport)"
+                def myText = "### Links\n* [Jenkins Console Details](${env.BUILD_URL}console)\n* [JUnit Report](${env.BUILD_URL}testReport)"
 
                 publishChecks name: 'Yas Pipeline Summary', 
                     title: "Build ${buildResult}", 
@@ -187,7 +187,7 @@ pipeline {
         }
 
         success {
-            echo 'Gom tất cả báo cáo Coverage và kiểm tra ngưỡng 70%...'
+            echo 'Aggregating Jacoco coverage reports and enforcing 70% threshold...'
             recordCoverage(
                 tools: [[parser: 'JACOCO', pattern: '**/target/site/jacoco/jacoco.xml']],
                 sourceDirectories: getSourcePaths(),
