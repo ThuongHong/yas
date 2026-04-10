@@ -98,10 +98,23 @@ pipeline {
             }
         }
 
-        stage('Global Dependencies Setup') {
+        stage('Global Dependencies Setup & Common Library') {
             steps {
-                sh 'mvn install -N -DskipTests'
-                sh 'mvn clean install -DskipTests -pl common-library -am'
+                script {
+                    sh 'mvn install -N -DskipTests'
+                    
+                    def services = env.SERVICES_TO_BUILD.tokenize(',')
+                    if (services.contains('common-library')) {
+                        echo "Common library changed (or full build). Testing & scanning sequentially first!"
+                        buildService('common-library')
+                        
+                        services.remove('common-library')
+                        env.SERVICES_TO_BUILD = services.join(',')
+                    } else {
+                        echo "Common library unchanged. Installing quickly to cache without tests..."
+                        sh 'mvn clean install -DskipTests -pl common-library -am'
+                    }
+                }
             }
         }
 
@@ -199,7 +212,8 @@ def buildService(String serviceName) {
             ${mvnCmd} sonar:sonar \
             -Dsonar.projectKey=thuonghong_yas-${serviceName} \
             -Dsonar.projectName=yas-${serviceName} \
-            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
+            -Dsonar.coverage.jacoco.xmlReportPaths=${WORKSPACE}/${serviceName}/target/site/jacoco/jacoco.xml \
+            -Dsonar.working.directory=${WORKSPACE}/target/sonar-${serviceName}
         """
     }
 }
