@@ -52,7 +52,7 @@ pipeline {
                     def allServices = ['backoffice-bff', 'cart', 'customer', 'inventory', 'location',
                                     'media', 'order', 'payment', 'payment-paypal', 'product',
                                     'promotion', 'rating', 'recommendation', 'sampledata', 'search',
-                                    'storefront-bff', 'tax', 'webhook']
+                                    'storefront-bff', 'tax', 'webhook', 'common-library']
 
                     def fileList = changedFiles ? changedFiles.split('\n') as List : []
 
@@ -78,9 +78,6 @@ pipeline {
         stage('Secret Scan (Gitleaks)') {
             steps {
                 script {
-                    // GIT_BASE_REF được set từ Initialize stage:
-                    //  - Feature branch: merge-base với main → quét tất cả commit trên branch
-                    //  - Main branch: HEAD^1 → quét đúng commit vừa push
                     def logOpts = env.GIT_BASE_REF ? "${env.GIT_BASE_REF}..HEAD" : "-1"
                     echo "Gitleaks scanning commits: ${logOpts}"
 
@@ -111,7 +108,7 @@ pipeline {
             steps {
                 script {
                     def services = env.SERVICES_TO_BUILD.tokenize(',')
-                    def chunks = services.collate(2)
+                    def chunks = services.collate(4)
 
                     for (chunk in chunks) {
                         def parallelBuilds = [:]
@@ -201,7 +198,7 @@ def buildService(String serviceName) {
             -am \
             -Dsonar.projectKey=thuonghong_yas-${serviceName} \
             -Dsonar.projectName=yas-${serviceName} \
-            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
+            -Dsonar.coverage.jacoco.xmlReportPaths=${WORKSPACE}/${serviceName}/target/site/jacoco/jacoco.xml \
             -Dsonar.working.directory=target/sonar-${serviceName}
         """
     }
