@@ -14,7 +14,8 @@ import org.springframework.retry.annotation.Backoff;
 /**
  * Custom annotation that extends Spring's {@link RetryableTopic} to
  * add retry and dead letter queue (DLQ) support for Kafka listeners.
- * Provides additional configuration for retry backoff, number of attempts,testt
+ * Provides additional configuration for retry backoff, number of
+ * attempts,testtt
  * topic creation, and exclusion of certain exceptions.testtt
  */
 @Documented
