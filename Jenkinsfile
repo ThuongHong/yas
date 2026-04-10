@@ -103,6 +103,11 @@ pipeline {
                 script {
                     sh 'mvn install -N -DskipTests'
                     
+                    sh '''
+                        mkdir -p ~/.m2/repository/com/yas/yas/\\${revision}
+                        cp ~/.m2/repository/com/yas/yas/1.0-SNAPSHOT/yas-1.0-SNAPSHOT.pom ~/.m2/repository/com/yas/yas/\\${revision}/yas-\\${revision}.pom
+                    '''
+                    
                     def services = env.SERVICES_TO_BUILD.tokenize(',')
                     if (services.contains('common-library')) {
                         echo "Common library changed (or full build). Testing & scanning sequentially first!"
@@ -202,14 +207,15 @@ pipeline {
 def buildService(String serviceName) {
     echo "--- Processing Service: ${serviceName} ---"
 
-    def mvnCmd = "mvn -Drevision=1.0-SNAPSHOT -pl .,${serviceName}"
+    def mvnCmd = "mvn -Drevision=1.0-SNAPSHOT -pl ${serviceName}"
 
     sh "${mvnCmd} install -DskipTests"
     sh "${mvnCmd} test jacoco:report"
 
     withSonarQubeEnv('yas') {
         sh """
-            ${mvnCmd} sonar:sonar \
+            mvn -Drevision=1.0-SNAPSHOT sonar:sonar \
+            -pl .,${serviceName} \
             -Dsonar.projectKey=thuonghong_yas-${serviceName} \
             -Dsonar.projectName=yas-${serviceName} \
             -Dsonar.coverage.jacoco.xmlReportPaths=${WORKSPACE}/${serviceName}/target/site/jacoco/jacoco.xml \
