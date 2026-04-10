@@ -103,11 +103,6 @@ pipeline {
                 script {
                     sh 'mvn install -N -DskipTests'
                     
-                    sh '''
-                        mkdir -p ~/.m2/repository/com/yas/yas/\\${revision}
-                        cp ~/.m2/repository/com/yas/yas/1.0-SNAPSHOT/yas-1.0-SNAPSHOT.pom ~/.m2/repository/com/yas/yas/\\${revision}/yas-\\${revision}.pom
-                    '''
-                    
                     def services = env.SERVICES_TO_BUILD.tokenize(',')
                     if (services.contains('common-library')) {
                         echo "Common library changed (or full build). Testing & scanning sequentially first!"
