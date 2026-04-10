@@ -191,18 +191,19 @@ pipeline {
 def buildService(String serviceName) {
     echo "--- Processing Service: ${serviceName} ---"
 
-    dir("${serviceName}") {
-        sh "mvn clean install -DskipTests"
-        sh "mvn test jacoco:report"
+    sh "mvn clean install -DskipTests -pl ${serviceName} -am"
+    sh "mvn test jacoco:report -pl ${serviceName} -am"
 
-        withSonarQubeEnv('yas') {
-            sh """
-                mvn sonar:sonar \
-                -Dsonar.projectKey=thuonghong_yas-${serviceName} \
-                -Dsonar.projectName=yas-${serviceName} \
-                -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
-            """
-        }
+    withSonarQubeEnv('yas') {
+        sh """
+            mvn sonar:sonar \
+            -pl ${serviceName} \
+            -am \
+            -Dsonar.projectKey=thuonghong_yas-${serviceName} \
+            -Dsonar.projectName=yas-${serviceName} \
+            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
+            -Dsonar.working.directory=${serviceName}/target/sonar
+        """
     }
 }
 
