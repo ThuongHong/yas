@@ -112,7 +112,7 @@ pipeline {
             steps {
                 script {
                     def services = env.SERVICES_TO_BUILD.tokenize(',')
-                    def chunks = services.collate(2)
+                    def chunks = services.collate(4)
 
                     for (chunk in chunks) {
                         def parallelBuilds = [:]
