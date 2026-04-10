@@ -201,7 +201,8 @@ def buildService(String serviceName) {
             -am \
             -Dsonar.projectKey=thuonghong_yas-${serviceName} \
             -Dsonar.projectName=yas-${serviceName} \
-            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
+            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
+            -Dsonar.working.directory=target/sonar-${serviceName}
         """
     }
 }
