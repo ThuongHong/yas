@@ -49,7 +49,7 @@ pipeline {
                     echo "Base ref: ${env.GIT_BASE_REF ?: '(none — build all)'}"
                     echo "Changed files:\n${changedFiles ?: '(none — build all)'}"
 
-                    def allServices = ['backoffice-bff', 'cart', 'customer', 'inventory', 'location',
+                    def allServices = ['common-library', 'backoffice-bff', 'cart', 'customer', 'inventory', 'location',
                                     'media', 'order', 'payment', 'payment-paypal', 'product',
                                     'promotion', 'rating', 'recommendation', 'sampledata', 'search',
                                     'storefront-bff', 'tax', 'webhook']
@@ -78,9 +78,6 @@ pipeline {
         stage('Secret Scan (Gitleaks)') {
             steps {
                 script {
-                    // GIT_BASE_REF được set từ Initialize stage:
-                    //  - Feature branch: merge-base với main → quét tất cả commit trên branch
-                    //  - Main branch: HEAD^1 → quét đúng commit vừa push
                     def logOpts = env.GIT_BASE_REF ? "${env.GIT_BASE_REF}..HEAD" : "-1"
                     echo "Gitleaks scanning commits: ${logOpts}"
 
@@ -111,7 +108,7 @@ pipeline {
             steps {
                 script {
                     def services = env.SERVICES_TO_BUILD.tokenize(',')
-                    def chunks = services.collate(2)
+                    def chunks = services.collate(4)
 
                     for (chunk in chunks) {
                         def parallelBuilds = [:]
@@ -191,17 +188,16 @@ pipeline {
 def buildService(String serviceName) {
     echo "--- Processing Service: ${serviceName} ---"
 
-    sh "mvn clean install -DskipTests -pl ${serviceName} -am"
-    sh "mvn test jacoco:report -pl ${serviceName} -am"
+    sh "mvn install -DskipTests -pl ${serviceName}"
+    sh "mvn test jacoco:report -pl ${serviceName}"
 
     withSonarQubeEnv('yas') {
         sh """
             mvn sonar:sonar \
             -pl ${serviceName} \
-            -am \
             -Dsonar.projectKey=thuonghong_yas-${serviceName} \
             -Dsonar.projectName=yas-${serviceName} \
-            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
+            -Dsonar.coverage.jacoco.xmlReportPaths=${env.WORKSPACE}/${serviceName}/target/site/jacoco/jacoco.xml \
             -Dsonar.working.directory=${serviceName}/target/sonar
         """
     }
