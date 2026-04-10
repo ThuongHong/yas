@@ -202,13 +202,14 @@ pipeline {
 def buildService(String serviceName) {
     echo "--- Processing Service: ${serviceName} ---"
 
-    sh "mvn install -DskipTests -pl ${serviceName}"
-    sh "mvn test jacoco:report -pl ${serviceName}"
+    def mvnCmd = "mvn -Drevision=1.0-SNAPSHOT -pl .,${serviceName}"
+
+    sh "${mvnCmd} install -DskipTests"
+    sh "${mvnCmd} test jacoco:report"
 
     withSonarQubeEnv('yas') {
         sh """
-            mvn sonar:sonar \
-            -pl .,${serviceName} \
+            ${mvnCmd} sonar:sonar \
             -Dsonar.projectKey=thuonghong_yas-${serviceName} \
             -Dsonar.projectName=yas-${serviceName} \
             -Dsonar.coverage.jacoco.xmlReportPaths=${WORKSPACE}/${serviceName}/target/site/jacoco/jacoco.xml \
