@@ -108,78 +108,21 @@ pipeline {
         }
 
         stage('Microservices Pipelines') {
-            parallel {
-                stage('Backoffice-BFF') {
-                    when { expression { env.SERVICES_TO_BUILD.tokenize(',').contains('backoffice-bff') } }
-                    steps { buildService('backoffice-bff') }
-                }
-                stage('Cart') {
-                    when { expression { env.SERVICES_TO_BUILD.tokenize(',').contains('cart') } }
-                    steps { buildService('cart') }
-                }
-                stage('Customer') {
-                    when { expression { env.SERVICES_TO_BUILD.tokenize(',').contains('customer') } }
-                    steps { buildService('customer') }
-                }
-                stage('Inventory') {
-                    when { expression { env.SERVICES_TO_BUILD.tokenize(',').contains('inventory') } }
-                    steps { buildService('inventory') }
-                }
-                stage('Location') {
-                    when { expression { env.SERVICES_TO_BUILD.tokenize(',').contains('location') } }
-                    steps { buildService('location') }
-                }
-                stage('Media') {
-                    when { expression { env.SERVICES_TO_BUILD.tokenize(',').contains('media') } }
-                    steps { buildService('media') }
-                }
-                stage('Order') {
-                    when { expression { env.SERVICES_TO_BUILD.tokenize(',').contains('order') } }
-                    steps { buildService('order') }
-                }
-                stage('Payment') {
-                    when { expression { env.SERVICES_TO_BUILD.tokenize(',').contains('payment') } }
-                    steps { buildService('payment') }
-                }
-                stage('Payment-Paypal') {
-                    when { expression { env.SERVICES_TO_BUILD.tokenize(',').contains('payment-paypal') } }
-                    steps { buildService('payment-paypal') }
-                }
-                stage('Product') {
-                    when { expression { env.SERVICES_TO_BUILD.tokenize(',').contains('product') } }
-                    steps { buildService('product') }
-                }
-                stage('Promotion') {
-                    when { expression { env.SERVICES_TO_BUILD.tokenize(',').contains('promotion') } }
-                    steps { buildService('promotion') }
-                }
-                stage('Rating') {
-                    when { expression { env.SERVICES_TO_BUILD.tokenize(',').contains('rating') } }
-                    steps { buildService('rating') }
-                }
-                stage('Recommendation') {
-                    when { expression { env.SERVICES_TO_BUILD.tokenize(',').contains('recommendation') } }
-                    steps { buildService('recommendation') }
-                }
-                stage('Sampledata') {
-                    when { expression { env.SERVICES_TO_BUILD.tokenize(',').contains('sampledata') } }
-                    steps { buildService('sampledata') }
-                }
-                stage('Search') {
-                    when { expression { env.SERVICES_TO_BUILD.tokenize(',').contains('search') } }
-                    steps { buildService('search') }
-                }
-                stage('Storefront-BFF') {
-                    when { expression { env.SERVICES_TO_BUILD.tokenize(',').contains('storefront-bff') } }
-                    steps { buildService('storefront-bff') }
-                }
-                stage('Tax') {
-                    when { expression { env.SERVICES_TO_BUILD.tokenize(',').contains('tax') } }
-                    steps { buildService('tax') }
-                }
-                stage('Webhook') {
-                    when { expression { env.SERVICES_TO_BUILD.tokenize(',').contains('webhook') } }
-                    steps { buildService('webhook') }
+            steps {
+                script {
+                    def services = env.SERVICES_TO_BUILD.tokenize(',')
+                    def chunks = services.collate(4)
+
+                    for (chunk in chunks) {
+                        def parallelBuilds = [:]
+                        chunk.each { serviceName ->
+                            def svc = serviceName
+                            parallelBuilds[svc] = {
+                                buildService(svc)
+                            }
+                        }
+                        parallel parallelBuilds
+                    }
                 }
             }
         }
@@ -202,11 +145,8 @@ pipeline {
 
     post {
         always {
-            // 1. JUnit: Tự động tạo Check "Tests" trên GitHub
             junit allowEmptyResults: true, testResults: '**/target/surefire-reports/*.xml'
 
-            // 2. Gitleaks: Tạo Check riêng tên là "Gitleaks Scan"
-            // Nó sẽ bôi đỏ trực tiếp nếu phát hiện secret
             recordIssues(
                 tools: [sarif(pattern: 'gitleaks-report.sarif')],
                 id: 'gitleaks',
@@ -214,10 +154,8 @@ pipeline {
                 skipPublishingChecks: false
             )
 
-            // 3. Pipeline Summary: Tạo Check tổng hợp tình trạng build các service
             script {
                 def buildResult = currentBuild.currentResult ?: 'SUCCESS'
-                // Biến đổi trạng thái để GitHub Checks hiểu (SUCCESS/FAILURE/NEUTRAL...)
                 def conclusion = (buildResult == 'SUCCESS') ? 'SUCCESS' : 'FAILURE'
                 
                 def mySummary = """### Kết quả Pipeline Yas Monorepo
