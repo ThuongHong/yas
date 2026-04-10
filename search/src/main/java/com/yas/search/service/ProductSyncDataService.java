@@ -31,7 +31,7 @@ public class ProductSyncDataService {
                 .uri(url)
                 .retrieve()
                 .body(ProductEsDetailVm.class);
-    }
+    }// test
 
     public void updateProduct(Long id) {
         ProductEsDetailVm productEsDetailVm = getProductEsDetailById(id);
