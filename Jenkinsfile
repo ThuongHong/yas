@@ -188,8 +188,8 @@ pipeline {
 def buildService(String serviceName) {
     echo "--- Processing Service: ${serviceName} ---"
 
-    sh "mvn install -DskipTests -pl ${serviceName} -am"
-    sh "mvn test jacoco:report -pl ${serviceName} -am"
+    sh "mvn install -DskipTests -pl ${serviceName}"
+    sh "mvn test jacoco:report -pl ${serviceName}"
 
     withSonarQubeEnv('yas') {
         sh """
