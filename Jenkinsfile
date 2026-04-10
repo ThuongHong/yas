@@ -208,7 +208,7 @@ def buildService(String serviceName) {
     withSonarQubeEnv('yas') {
         sh """
             mvn sonar:sonar \
-            -pl ${serviceName} \
+            -pl .,${serviceName} \
             -Dsonar.projectKey=thuonghong_yas-${serviceName} \
             -Dsonar.projectName=yas-${serviceName} \
             -Dsonar.coverage.jacoco.xmlReportPaths=${WORKSPACE}/${serviceName}/target/site/jacoco/jacoco.xml \
