@@ -100,6 +100,7 @@ pipeline {
 
         stage('Global Dependencies Setup') {
             steps {
+                sh 'mvn install -N -DskipTests'
                 sh 'mvn clean install -DskipTests -pl common-library -am'
             }
         }
@@ -188,18 +189,17 @@ pipeline {
 def buildService(String serviceName) {
     echo "--- Processing Service: ${serviceName} ---"
 
-    sh "mvn install -DskipTests -pl ${serviceName} -am"
-    sh "mvn test jacoco:report -pl ${serviceName} -am"
+    def mvnCmd = "mvn -Drevision=1.0-SNAPSHOT -f ${serviceName}/pom.xml"
+
+    sh "${mvnCmd} install -DskipTests"
+    sh "${mvnCmd} test jacoco:report"
 
     withSonarQubeEnv('yas') {
         sh """
-            mvn sonar:sonar \
-            -pl ${serviceName} \
-            -am \
+            ${mvnCmd} sonar:sonar \
             -Dsonar.projectKey=thuonghong_yas-${serviceName} \
             -Dsonar.projectName=yas-${serviceName} \
-            -Dsonar.coverage.jacoco.xmlReportPaths=${WORKSPACE}/${serviceName}/target/site/jacoco/jacoco.xml \
-            -Dsonar.working.directory=target/sonar-${serviceName}
+            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
         """
     }
 }
