@@ -9,8 +9,10 @@ import org.springframework.messaging.MessageHeaders;
 
 /**
  * Base class for CDC (Change Data Capture) Kafka consumers.
- * Provides common methods for processing messages and handling Dead Letter Topic (DLT) events.
- *
+ * Provides common methods for processing messages and handling Dead Letter
+ * Topic (DLT) events.
+ * test
+ * 
  * @param <K> Type of the message payload.
  */
 public abstract class BaseCdcConsumer<K, V> {
