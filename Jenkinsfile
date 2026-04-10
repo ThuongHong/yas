@@ -7,6 +7,8 @@ pipeline {
 
     environment {
         SONAR_TOKEN = credentials('sonar-token')
+
+        MAVEN_OPTS = "-Xms512m -Xmx1536m -XX:+UseG1GC"
     }
 
     stages {
