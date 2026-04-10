@@ -7,8 +7,6 @@ pipeline {
 
     environment {
         SONAR_TOKEN = credentials('sonar-token')
-
-        MAVEN_OPTS = "-Xms512m -Xmx1536m -XX:+UseG1GC"
     }
 
     stages {
@@ -51,7 +49,7 @@ pipeline {
                     echo "Base ref: ${env.GIT_BASE_REF ?: '(none — build all)'}"
                     echo "Changed files:\n${changedFiles ?: '(none — build all)'}"
 
-                    def allServices = ['common-library', 'backoffice-bff', 'cart', 'customer', 'inventory', 'location',
+                    def allServices = ['backoffice-bff', 'cart', 'customer', 'inventory', 'location',
                                     'media', 'order', 'payment', 'payment-paypal', 'product',
                                     'promotion', 'rating', 'recommendation', 'sampledata', 'search',
                                     'storefront-bff', 'tax', 'webhook']
@@ -80,6 +78,9 @@ pipeline {
         stage('Secret Scan (Gitleaks)') {
             steps {
                 script {
+                    // GIT_BASE_REF được set từ Initialize stage:
+                    //  - Feature branch: merge-base với main → quét tất cả commit trên branch
+                    //  - Main branch: HEAD^1 → quét đúng commit vừa push
                     def logOpts = env.GIT_BASE_REF ? "${env.GIT_BASE_REF}..HEAD" : "-1"
                     echo "Gitleaks scanning commits: ${logOpts}"
 
@@ -102,8 +103,6 @@ pipeline {
 
         stage('Global Dependencies Setup') {
             steps {
-                sh 'mvn install -N -DskipTests'
-
                 sh 'mvn clean install -DskipTests -pl common-library -am'
             }
         }
@@ -192,16 +191,17 @@ pipeline {
 def buildService(String serviceName) {
     echo "--- Processing Service: ${serviceName} ---"
 
-    sh "mvn install -DskipTests -pl ${serviceName}"
-    sh "mvn test jacoco:report -pl ${serviceName}"
+    sh "mvn clean install -DskipTests -pl ${serviceName} -am"
+    sh "mvn test jacoco:report -pl ${serviceName} -am"
 
     withSonarQubeEnv('yas') {
         sh """
-            mvn sonar:sonar -f ${serviceName}/pom.xml \
+            mvn sonar:sonar \
+            -pl ${serviceName} \
+            -am \
             -Dsonar.projectKey=thuonghong_yas-${serviceName} \
             -Dsonar.projectName=yas-${serviceName} \
-            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
-            -Dsonar.working.directory=target/sonar
+            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
         """
     }
 }
