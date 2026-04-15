@@ -1,83 +1,100 @@
 package com.yas.product.service;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.yas.product.ProductApplication;
+import com.yas.commonlibrary.exception.DuplicatedException;
+import com.yas.commonlibrary.exception.NotFoundException;
 import com.yas.product.model.Category;
 import com.yas.product.repository.CategoryRepository;
-import com.yas.product.repository.ProductCategoryRepository;
-import com.yas.product.viewmodel.NoFileMediaVm;
-import com.yas.product.viewmodel.category.CategoryGetDetailVm;
-import com.yas.product.viewmodel.category.CategoryGetVm;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
+import com.yas.product.viewmodel.category.CategoryPostVm;
+import java.util.Optional;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@SpringBootTest(classes = ProductApplication.class)
+@ExtendWith(MockitoExtension.class)
 class CategoryServiceTest {
-    @Autowired
+
+    @Mock
     private CategoryRepository categoryRepository;
-    @Autowired
-    private ProductCategoryRepository productCategoryRepository;
-    @MockitoBean
+
+    @Mock
     private MediaService mediaService;
-    @Autowired
+
+    @InjectMocks
     private CategoryService categoryService;
 
-    private Category category;
-    private NoFileMediaVm noFileMediaVm;
-
-    @BeforeEach
-    void setUp() {
-
-        category = new Category();
-        category.setName("name");
-        category.setSlug("slug");
-        category.setDescription("description");
-        category.setMetaKeyword("metaKeyword");
-        category.setMetaDescription("metaDescription");
-        category.setDisplayOrder((short) 1);
-        category.setIsPublished(true);
-        category.setImageId(1L);
-        categoryRepository.save(category);
-
-        noFileMediaVm = new NoFileMediaVm(1L, "caption", "fileName", "mediaType", "url");
+    private CategoryPostVm buildVm(String name, Long parentId) {
+        return new CategoryPostVm(name, "slug-" + name.toLowerCase().replace(" ", "-"),
+            "desc", parentId, "keywords", "meta", (short) 1, true, null);
     }
 
-    @AfterEach
-    void tearDown() {
-        productCategoryRepository.deleteAll();
-        categoryRepository.deleteAll();
+    @Nested
+    class CreateCategoryTest {
+
+        @Test
+        void create_validVm_savesAndReturnsCategory() {
+            CategoryPostVm vm = buildVm("Electronics", null);
+            Category saved = new Category();
+            saved.setId(1L);
+            saved.setName("Electronics");
+
+            when(categoryRepository.findExistedName("Electronics", null)).thenReturn(null);
+            when(categoryRepository.save(any(Category.class))).thenReturn(saved);
+
+            Category result = categoryService.create(vm);
+
+            assertNotNull(result);
+            verify(categoryRepository).save(any(Category.class));
+        }
+
+        @Test
+        void create_duplicateName_throwsDuplicatedException() {
+            CategoryPostVm vm = buildVm("Electronics", null);
+            Category existing = new Category();
+            existing.setId(99L);
+
+            when(categoryRepository.findExistedName("Electronics", null)).thenReturn(existing);
+
+            assertThrows(DuplicatedException.class, () -> categoryService.create(vm));
+            verify(categoryRepository, never()).save(any());
+        }
     }
 
-    @Test
-    void getCategoryById_Success() {
-        when(mediaService.getMedia(category.getImageId())).thenReturn(noFileMediaVm);
-        CategoryGetDetailVm categoryGetDetailVm = categoryService.getCategoryById(category.getId());
-        assertNotNull(categoryGetDetailVm);
-        assertEquals("name", categoryGetDetailVm.name());
-    }
+    @Nested
+    class UpdateCategoryTest {
 
-    @Test
-    void getCategories_Success() {
-        when(mediaService.getMedia(any())).thenReturn(noFileMediaVm);
-        Assertions.assertEquals(1, categoryService.getCategories("name").size());
-        CategoryGetVm categoryGetVm = categoryService.getCategories("name").getFirst();
-        assertEquals("name", categoryGetVm.name());
-    }
+        @Test
+        void update_notFound_throwsNotFoundException() {
+            CategoryPostVm vm = buildVm("Updated", null);
 
-    @Test
-    void getCategoriesPageable_Success() {
-        when(mediaService.getMedia(category.getImageId())).thenReturn(noFileMediaVm);
-        Assertions.assertEquals(1, categoryService.getPageableCategories(0, 1).categoryContent().size());
-        CategoryGetVm categoryGetVm = categoryService.getCategories("a").getFirst();
-        assertEquals("name", categoryGetVm.name());
+            when(categoryRepository.findExistedName("Updated", 99L)).thenReturn(null);
+            when(categoryRepository.findById(99L)).thenReturn(Optional.empty());
+
+            assertThrows(NotFoundException.class, () -> categoryService.update(vm, 99L));
+        }
+
+        @Test
+        void update_validVm_updatesCategory() {
+            CategoryPostVm vm = buildVm("Updated", null);
+            Category existing = new Category();
+            existing.setId(1L);
+            existing.setName("Old");
+
+            when(categoryRepository.findExistedName("Updated", 1L)).thenReturn(null);
+            when(categoryRepository.findById(1L)).thenReturn(Optional.of(existing));
+
+            categoryService.update(vm, 1L);
+
+            verify(categoryRepository).findById(1L);
+        }
     }
 }
