@@ -2,12 +2,18 @@ package com.yas.product.service;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.yas.product.model.ProductOption;
+import com.yas.product.model.ProductOptionCombination;
+import com.yas.product.model.ProductRelated;
+import com.yas.product.model.enumeration.FilterExistInWhSelection;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import com.yas.commonlibrary.exception.BadRequestException;
@@ -26,11 +32,20 @@ import com.yas.product.repository.ProductOptionValueRepository;
 import com.yas.product.repository.ProductRelatedRepository;
 import com.yas.product.repository.ProductRepository;
 import com.yas.product.viewmodel.NoFileMediaVm;
+import com.yas.product.viewmodel.product.ProductDetailVm;
+import com.yas.product.viewmodel.product.ProductEsDetailVm;
+import com.yas.product.viewmodel.product.ProductFeatureGetVm;
 import com.yas.product.viewmodel.product.ProductGetCheckoutListVm;
 import com.yas.product.viewmodel.product.ProductGetDetailVm;
+import com.yas.product.viewmodel.product.ProductListGetVm;
+import com.yas.product.viewmodel.product.ProductListVm;
 import com.yas.product.viewmodel.product.ProductPostVm;
 import com.yas.product.viewmodel.product.ProductPutVm;
+import com.yas.product.viewmodel.product.ProductQuantityPostVm;
 import com.yas.product.viewmodel.product.ProductQuantityPutVm;
+import com.yas.product.viewmodel.product.ProductSlugGetVm;
+import com.yas.product.viewmodel.product.ProductThumbnailVm;
+import com.yas.product.viewmodel.product.ProductsGetVm;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -330,6 +345,584 @@ class ProductServiceTest {
 
             assertNotNull(result);
             verify(productRepository).findAllPublishedProductsByIds(any(), any(Pageable.class));
+        }
+    }
+
+    @Nested
+    class GetProductsWithFilterTest {
+
+        @Test
+        void getProductsWithFilter_returnsPagedResult() {
+            Product product = Product.builder()
+                .id(1L).name("Laptop").slug("laptop").price(999.0).build();
+
+            Page<Product> page = new PageImpl<>(List.of(product));
+            when(productRepository.getProductsWithFilter(anyString(), anyString(), any(Pageable.class)))
+                .thenReturn(page);
+
+            ProductListGetVm result = productService.getProductsWithFilter(0, 10, "Laptop", "BrandX");
+
+            assertNotNull(result);
+            verify(productRepository).getProductsWithFilter(anyString(), anyString(), any(Pageable.class));
+        }
+    }
+
+    @Nested
+    class GetProductByIdTest {
+
+        @Test
+        void getProductById_found_returnsDetailVm() {
+            Brand brand = new Brand();
+            brand.setId(1L);
+
+            Product product = Product.builder()
+                .id(1L).name("Laptop").slug("laptop")
+                .brand(brand)
+                .thumbnailMediaId(2L)
+                .productCategories(new ArrayList<>())
+                .productImages(new ArrayList<>())
+                .build();
+
+            when(productRepository.findById(1L)).thenReturn(Optional.of(product));
+            when(mediaService.getMedia(2L)).thenReturn(
+                new NoFileMediaVm(2L, "", "", "", "http://img.jpg"));
+
+            ProductDetailVm result = productService.getProductById(1L);
+
+            assertNotNull(result);
+        }
+
+        @Test
+        void getProductById_notFound_throwsNotFoundException() {
+            when(productRepository.findById(99L)).thenReturn(Optional.empty());
+
+            assertThrows(NotFoundException.class, () -> productService.getProductById(99L));
+        }
+    }
+
+    @Nested
+    class GetLatestProductsTest {
+
+        @Test
+        void getLatestProducts_countZero_returnsEmpty() {
+            List<ProductListVm> result = productService.getLatestProducts(0);
+
+            assertTrue(result.isEmpty());
+        }
+
+        @Test
+        void getLatestProducts_validCount_returnsList() {
+            Product product = Product.builder()
+                .id(1L).name("Laptop").slug("laptop").price(999.0).build();
+
+            when(productRepository.getLatestProducts(any(Pageable.class)))
+                .thenReturn(List.of(product));
+
+            List<ProductListVm> result = productService.getLatestProducts(5);
+
+            assertNotNull(result);
+        }
+
+        @Test
+        void getLatestProducts_emptyResult_returnsEmpty() {
+            when(productRepository.getLatestProducts(any(Pageable.class)))
+                .thenReturn(List.of());
+
+            List<ProductListVm> result = productService.getLatestProducts(5);
+
+            assertTrue(result.isEmpty());
+        }
+    }
+
+    @Nested
+    class GetProductsByBrandTest {
+
+        @Test
+        void getProductsByBrand_found_returnsThumbnails() {
+            Brand brand = new Brand();
+            brand.setId(1L);
+
+            Product product = Product.builder()
+                .id(1L).name("Phone").slug("phone").thumbnailMediaId(5L).build();
+
+            when(brandRepository.findBySlug("brand-x")).thenReturn(Optional.of(brand));
+            when(productRepository.findAllByBrandAndIsPublishedTrueOrderByIdAsc(brand))
+                .thenReturn(List.of(product));
+            when(mediaService.getMedia(5L)).thenReturn(
+                new NoFileMediaVm(5L, "", "", "", "http://img.jpg"));
+
+            List<ProductThumbnailVm> result = productService.getProductsByBrand("brand-x");
+
+            assertNotNull(result);
+            verify(brandRepository).findBySlug("brand-x");
+        }
+
+        @Test
+        void getProductsByBrand_brandNotFound_throwsNotFoundException() {
+            when(brandRepository.findBySlug("unknown")).thenReturn(Optional.empty());
+
+            assertThrows(NotFoundException.class, () -> productService.getProductsByBrand("unknown"));
+        }
+    }
+
+    @Nested
+    class GetListFeaturedProductsTest {
+
+        @Test
+        void getListFeaturedProducts_returnsVm() {
+            Product product = Product.builder()
+                .id(1L).name("Phone").slug("phone").price(99.0).thumbnailMediaId(1L).build();
+
+            Page<Product> page = new PageImpl<>(List.of(product));
+            when(productRepository.getFeaturedProduct(any(Pageable.class))).thenReturn(page);
+            when(mediaService.getMedia(1L)).thenReturn(
+                new NoFileMediaVm(1L, "", "", "", "http://img.jpg"));
+
+            ProductFeatureGetVm result = productService.getListFeaturedProducts(0, 10);
+
+            assertNotNull(result);
+        }
+    }
+
+    @Nested
+    class GetProductDetailTest {
+
+        @Test
+        void getProductDetail_found_returnsVm() {
+            Brand brand = new Brand();
+            brand.setId(1L);
+            brand.setName("BrandX");
+
+            Product product = Product.builder()
+                .id(1L).name("Laptop").slug("laptop")
+                .brand(brand)
+                .thumbnailMediaId(2L)
+                .productCategories(new ArrayList<>())
+                .productImages(new ArrayList<>())
+                .attributeValues(new ArrayList<>())
+                .build();
+
+            when(productRepository.findBySlugAndIsPublishedTrue("laptop")).thenReturn(Optional.of(product));
+            when(mediaService.getMedia(2L)).thenReturn(
+                new NoFileMediaVm(2L, "", "", "", "http://img.jpg"));
+
+            var result = productService.getProductDetail("laptop");
+
+            assertNotNull(result);
+        }
+
+        @Test
+        void getProductDetail_notFound_throwsNotFoundException() {
+            when(productRepository.findBySlugAndIsPublishedTrue("unknown")).thenReturn(Optional.empty());
+
+            assertThrows(NotFoundException.class, () -> productService.getProductDetail("unknown"));
+        }
+    }
+
+    @Nested
+    class DeleteProductTest {
+
+        @Test
+        void deleteProduct_found_setsPublishedFalse() {
+            Product product = Product.builder()
+                .id(1L).name("Laptop").slug("laptop").build();
+
+            when(productRepository.findById(1L)).thenReturn(Optional.of(product));
+            when(productRepository.save(any(Product.class))).thenReturn(product);
+
+            productService.deleteProduct(1L);
+
+            verify(productRepository).save(any(Product.class));
+        }
+
+        @Test
+        void deleteProduct_notFound_throwsNotFoundException() {
+            when(productRepository.findById(99L)).thenReturn(Optional.empty());
+
+            assertThrows(NotFoundException.class, () -> productService.deleteProduct(99L));
+        }
+
+        @Test
+        void deleteProduct_productWithParentAndCombinations_deletesCombinations() {
+            Product parent = Product.builder().id(2L).build();
+
+            ProductOptionCombination combo = ProductOptionCombination.builder()
+                .id(1L).build();
+
+            Product product = Product.builder()
+                .id(1L).name("Variant").slug("variant").parent(parent).build();
+
+            when(productRepository.findById(1L)).thenReturn(Optional.of(product));
+            when(productOptionCombinationRepository.findAllByProduct(product))
+                .thenReturn(List.of(combo));
+            when(productRepository.save(any(Product.class))).thenReturn(product);
+
+            productService.deleteProduct(1L);
+
+            verify(productOptionCombinationRepository).deleteAll(any());
+        }
+    }
+
+    @Nested
+    class GetProductsByMultiQueryTest {
+
+        @Test
+        void getProductsByMultiQuery_returnsPagedResult() {
+            Product product = Product.builder()
+                .id(1L).name("Phone").slug("phone").price(99.0).thumbnailMediaId(1L).build();
+
+            Page<Product> page = new PageImpl<>(List.of(product));
+            when(productRepository.findByProductNameAndCategorySlugAndPriceBetween(
+                anyString(), anyString(), any(), any(), any(Pageable.class)))
+                .thenReturn(page);
+            when(mediaService.getMedia(1L)).thenReturn(
+                new NoFileMediaVm(1L, "", "", "", "http://img.jpg"));
+
+            ProductsGetVm result = productService.getProductsByMultiQuery(0, 10, "phone", "electronics", 0.0, 500.0);
+
+            assertNotNull(result);
+        }
+    }
+
+    @Nested
+    class GetProductVariationsByParentIdTest {
+
+        @Test
+        void getProductVariationsByParentId_noOptions_returnsEmpty() {
+            Product product = Product.builder()
+                .id(1L).name("Laptop").slug("laptop").hasOptions(false).build();
+
+            when(productRepository.findById(1L)).thenReturn(Optional.of(product));
+
+            var result = productService.getProductVariationsByParentId(1L);
+
+            assertTrue(result.isEmpty());
+        }
+
+        @Test
+        void getProductVariationsByParentId_notFound_throwsNotFoundException() {
+            when(productRepository.findById(99L)).thenReturn(Optional.empty());
+
+            assertThrows(NotFoundException.class, () -> productService.getProductVariationsByParentId(99L));
+        }
+
+        @Test
+        void getProductVariationsByParentId_withOptions_returnsVariations() {
+            Product variation = Product.builder()
+                .id(2L).name("Red").slug("laptop-red").price(999.0)
+                .productImages(new ArrayList<>())
+                .isPublished(true)
+                .build();
+
+            Product parent = Product.builder()
+                .id(1L).name("Laptop").slug("laptop").hasOptions(true)
+                .products(List.of(variation))
+                .build();
+
+            when(productRepository.findById(1L)).thenReturn(Optional.of(parent));
+            when(productOptionCombinationRepository.findAllByProduct(variation))
+                .thenReturn(List.of());
+
+            var result = productService.getProductVariationsByParentId(1L);
+
+            assertNotNull(result);
+        }
+    }
+
+    @Nested
+    class GetProductSlugTest {
+
+        @Test
+        void getProductSlug_noParent_returnsOwnSlug() {
+            Product product = Product.builder()
+                .id(1L).slug("laptop").build();
+
+            when(productRepository.findById(1L)).thenReturn(Optional.of(product));
+
+            ProductSlugGetVm result = productService.getProductSlug(1L);
+
+            assertNotNull(result);
+        }
+
+        @Test
+        void getProductSlug_withParent_returnsParentSlug() {
+            Product parent = Product.builder().id(2L).slug("parent-laptop").build();
+
+            Product product = Product.builder()
+                .id(1L).slug("variant").parent(parent).build();
+
+            when(productRepository.findById(1L)).thenReturn(Optional.of(product));
+
+            ProductSlugGetVm result = productService.getProductSlug(1L);
+
+            assertNotNull(result);
+        }
+
+        @Test
+        void getProductSlug_notFound_throwsNotFoundException() {
+            when(productRepository.findById(99L)).thenReturn(Optional.empty());
+
+            assertThrows(NotFoundException.class, () -> productService.getProductSlug(99L));
+        }
+    }
+
+    @Nested
+    class GetProductEsDetailByIdTest {
+
+        @Test
+        void getProductEsDetailById_found_returnsVm() {
+            Brand brand = new Brand();
+            brand.setId(1L);
+            brand.setName("BrandX");
+
+            Product product = Product.builder()
+                .id(1L).name("Laptop").slug("laptop").price(999.0)
+                .brand(brand)
+                .productCategories(new ArrayList<>())
+                .attributeValues(new ArrayList<>())
+                .build();
+
+            when(productRepository.findById(1L)).thenReturn(Optional.of(product));
+
+            ProductEsDetailVm result = productService.getProductEsDetailById(1L);
+
+            assertNotNull(result);
+        }
+
+        @Test
+        void getProductEsDetailById_notFound_throwsNotFoundException() {
+            when(productRepository.findById(99L)).thenReturn(Optional.empty());
+
+            assertThrows(NotFoundException.class, () -> productService.getProductEsDetailById(99L));
+        }
+    }
+
+    @Nested
+    class GetRelatedProductsBackofficeTest {
+
+        @Test
+        void getRelatedProductsBackoffice_found_returnsList() {
+            Product relatedProduct = Product.builder()
+                .id(2L).name("Phone").slug("phone").price(99.0).build();
+
+            ProductRelated rel = ProductRelated.builder()
+                .id(1L).relatedProduct(relatedProduct).build();
+
+            Product product = Product.builder()
+                .id(1L).name("Laptop").slug("laptop")
+                .relatedProducts(List.of(rel))
+                .build();
+
+            when(productRepository.findById(1L)).thenReturn(Optional.of(product));
+
+            List<ProductListVm> result = productService.getRelatedProductsBackoffice(1L);
+
+            assertNotNull(result);
+        }
+
+        @Test
+        void getRelatedProductsBackoffice_notFound_throwsNotFoundException() {
+            when(productRepository.findById(99L)).thenReturn(Optional.empty());
+
+            assertThrows(NotFoundException.class, () -> productService.getRelatedProductsBackoffice(99L));
+        }
+    }
+
+    @Nested
+    class GetRelatedProductsStorefrontTest {
+
+        @Test
+        void getRelatedProductsStorefront_found_returnsVm() {
+            Product relatedProduct = Product.builder()
+                .id(2L).name("Phone").slug("phone").price(99.0)
+                .thumbnailMediaId(1L).isPublished(true).build();
+
+            ProductRelated rel = ProductRelated.builder()
+                .id(1L).relatedProduct(relatedProduct).build();
+
+            Product product = Product.builder()
+                .id(1L).name("Laptop").slug("laptop").build();
+
+            Page<ProductRelated> relPage = new PageImpl<>(List.of(rel));
+
+            when(productRepository.findById(1L)).thenReturn(Optional.of(product));
+            when(productRelatedRepository.findAllByProduct(any(Product.class), any(Pageable.class)))
+                .thenReturn(relPage);
+            when(mediaService.getMedia(1L)).thenReturn(
+                new NoFileMediaVm(1L, "", "", "", "http://img.jpg"));
+
+            ProductsGetVm result = productService.getRelatedProductsStorefront(1L, 0, 10);
+
+            assertNotNull(result);
+        }
+
+        @Test
+        void getRelatedProductsStorefront_notFound_throwsNotFoundException() {
+            when(productRepository.findById(99L)).thenReturn(Optional.empty());
+
+            assertThrows(NotFoundException.class,
+                () -> productService.getRelatedProductsStorefront(99L, 0, 10));
+        }
+    }
+
+    @Nested
+    class GetProductsForWarehouseTest {
+
+        @Test
+        void getProductsForWarehouse_returnsInfoList() {
+            Product product = Product.builder()
+                .id(1L).name("Laptop").slug("laptop").price(999.0)
+                .stockQuantity(10L).stockTrackingEnabled(true).build();
+
+            when(productRepository.findProductForWarehouse(anyString(), anyString(), anyList(), anyString()))
+                .thenReturn(List.of(product));
+
+            var result = productService.getProductsForWarehouse("Laptop", "SKU-1", List.of(1L),
+                FilterExistInWhSelection.ALL);
+
+            assertNotNull(result);
+        }
+    }
+
+    @Nested
+    class UpdateProductQuantityTest {
+
+        @Test
+        void updateProductQuantity_updatesStockQuantity() {
+            Product product = Product.builder()
+                .id(1L).stockQuantity(5L).build();
+
+            when(productRepository.findAllByIdIn(List.of(1L))).thenReturn(List.of(product));
+            when(productRepository.saveAll(any())).thenReturn(List.of(product));
+
+            productService.updateProductQuantity(List.of(new ProductQuantityPostVm(1L, 20L)));
+
+            verify(productRepository).saveAll(any());
+        }
+    }
+
+    @Nested
+    class GetProductByIdsTest {
+
+        @Test
+        void getProductByIds_returnsList() {
+            Product product = Product.builder()
+                .id(1L).name("Laptop").slug("laptop").price(999.0).build();
+
+            when(productRepository.findAllByIdIn(List.of(1L))).thenReturn(List.of(product));
+
+            List<ProductListVm> result = productService.getProductByIds(List.of(1L));
+
+            assertNotNull(result);
+        }
+    }
+
+    @Nested
+    class RestoreStockQuantityTest {
+
+        @Test
+        void restoreStockQuantity_addsQuantity() {
+            Product product = Product.builder()
+                .id(1L).stockTrackingEnabled(true).stockQuantity(5L).build();
+
+            when(productRepository.findAllByIdIn(List.of(1L))).thenReturn(List.of(product));
+            when(productRepository.saveAll(any())).thenReturn(List.of(product));
+
+            productService.restoreStockQuantity(List.of(new ProductQuantityPutVm(1L, 3L)));
+
+            verify(productRepository).saveAll(any());
+        }
+    }
+
+    @Nested
+    class GetProductByCategoryIdsTest {
+
+        @Test
+        void getProductByCategoryIds_returnsList() {
+            Product product = Product.builder()
+                .id(1L).name("Laptop").slug("laptop").price(999.0).build();
+
+            when(productRepository.findByCategoryIdsIn(List.of(1L))).thenReturn(List.of(product));
+
+            List<ProductListVm> result = productService.getProductByCategoryIds(List.of(1L));
+
+            assertNotNull(result);
+        }
+    }
+
+    @Nested
+    class GetProductByBrandIdsTest {
+
+        @Test
+        void getProductByBrandIds_returnsList() {
+            Product product = Product.builder()
+                .id(1L).name("Laptop").slug("laptop").price(999.0).build();
+
+            when(productRepository.findByBrandIdsIn(List.of(1L))).thenReturn(List.of(product));
+
+            List<ProductListVm> result = productService.getProductByBrandIds(List.of(1L));
+
+            assertNotNull(result);
+        }
+    }
+
+    @Nested
+    class GetFeaturedProductsByIdTest {
+
+        @Test
+        void getFeaturedProductsById_withThumbnail_returnsList() {
+            Product product = Product.builder()
+                .id(1L).name("Laptop").slug("laptop").price(999.0).thumbnailMediaId(1L).build();
+
+            when(productRepository.findAllByIdIn(List.of(1L))).thenReturn(List.of(product));
+            when(mediaService.getMedia(1L)).thenReturn(
+                new NoFileMediaVm(1L, "", "", "", "http://img.jpg"));
+
+            var result = productService.getFeaturedProductsById(List.of(1L));
+
+            assertNotNull(result);
+        }
+
+        @Test
+        void getFeaturedProductsById_noThumbnailWithParent_lookupParent() {
+            Product parent = Product.builder().id(2L).thumbnailMediaId(5L).build();
+
+            Product product = Product.builder()
+                .id(1L).name("Variant").slug("variant").price(99.0)
+                .thumbnailMediaId(1L).parent(parent).build();
+
+            when(productRepository.findAllByIdIn(List.of(1L))).thenReturn(List.of(product));
+            when(mediaService.getMedia(1L)).thenReturn(
+                new NoFileMediaVm(1L, "", "", "", ""));
+            when(productRepository.findById(2L)).thenReturn(Optional.of(parent));
+            when(mediaService.getMedia(5L)).thenReturn(
+                new NoFileMediaVm(5L, "", "", "", "http://img.jpg"));
+
+            var result = productService.getFeaturedProductsById(List.of(1L));
+
+            assertNotNull(result);
+        }
+    }
+
+    @Nested
+    class ExportProductsTest {
+
+        @Test
+        void exportProducts_returnsList() {
+            Brand brand = new Brand();
+            brand.setId(1L);
+            brand.setName("BrandX");
+
+            Product product = Product.builder()
+                .id(1L).name("Laptop").slug("laptop")
+                .brand(brand).price(999.0).build();
+
+            when(productRepository.getExportingProducts(anyString(), anyString()))
+                .thenReturn(List.of(product));
+
+            var result = productService.exportProducts("Laptop", "BrandX");
+
+            assertNotNull(result);
         }
     }
 }
