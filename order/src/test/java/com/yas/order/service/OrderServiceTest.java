@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -153,7 +154,7 @@ class OrderServiceTest {
             OrderVm result = orderService.createOrder(postVm);
 
             assertThat(result).isNotNull();
-            verify(orderRepository).save(any(Order.class));
+            verify(orderRepository, times(2)).save(any(Order.class));
             verify(orderItemRepository).saveAll(any());
         }
 
