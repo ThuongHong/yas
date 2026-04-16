@@ -221,6 +221,7 @@ class CategoryServiceTest {
             cat.setId(1L);
             cat.setName("Electronics");
             cat.setSlug("electronics");
+            cat.setDisplayOrder((short) 0);
 
             when(categoryRepository.findById(1L)).thenReturn(Optional.of(cat));
 
@@ -236,6 +237,7 @@ class CategoryServiceTest {
             cat.setId(1L);
             cat.setName("Electronics");
             cat.setSlug("electronics");
+            cat.setDisplayOrder((short) 0);
             cat.setImageId(5L);
 
             when(categoryRepository.findById(1L)).thenReturn(Optional.of(cat));
@@ -253,11 +255,13 @@ class CategoryServiceTest {
             Category parent = new Category();
             parent.setId(10L);
             parent.setName("ParentCat");
+            parent.setDisplayOrder((short) 0);
 
             Category cat = new Category();
             cat.setId(1L);
             cat.setName("Child");
             cat.setSlug("child");
+            cat.setDisplayOrder((short) 0);
             cat.setParent(parent);
 
             when(categoryRepository.findById(1L)).thenReturn(Optional.of(cat));
