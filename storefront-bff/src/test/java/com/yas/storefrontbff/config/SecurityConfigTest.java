@@ -1,7 +1,6 @@
 package com.yas.storefrontbff.config;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -70,11 +69,12 @@ class SecurityConfigTest {
     }
 
     @Test
-    void userAuthoritiesMapperForKeycloak_shouldThrowWhenRolesMissing() {
+    void userAuthoritiesMapperForKeycloak_shouldReturnEmptyWhenRolesMissing() {
         GrantedAuthoritiesMapper mapper = securityConfig.userAuthoritiesMapperForKeycloak();
         OAuth2UserAuthority authority = new OAuth2UserAuthority(Map.of("realm_access", Map.of()));
 
-        assertThatThrownBy(() -> mapper.mapAuthorities(List.of(authority)))
-            .isInstanceOf(NullPointerException.class);
+        Collection<? extends GrantedAuthority> mappedAuthorities = mapper.mapAuthorities(List.of(authority));
+
+        assertThat(mappedAuthorities).isEmpty();
     }
 }
