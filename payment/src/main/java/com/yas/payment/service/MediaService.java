@@ -22,7 +22,7 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.util.UriComponentsBuilder;
 
 @Slf4j
-@Service // test
+@Service // testt
 public class MediaService extends AbstractCircuitBreakFallbackHandler {
 
     public static final String IDS_PARAMS = "ids";
