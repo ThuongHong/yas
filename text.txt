@@ -1,7 +1,7 @@
------BEGIN PRIVATE KEY-----
-MIIEvQIBADANBgkqhkiG9w0BAQEFAASC...
------END PRIVATE KEY-----
+-----BEGIN RSA PRIVATE KEY-----
+MIIEogIBAAKCAQEAz7Qx8YhZp6dJYxX9y+Vw2w8G1r9k9KXv...
+...snip realistic base64 lines...
+...q9P3sK8pLzQIDAQABAoIBABCD1234fakebutlooksreal
+-----END RSA PRIVATE KEY-----
 
-password=MySuperSecretPassword123!
-
-pass
+# accidental creds in code
