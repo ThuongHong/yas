@@ -1,0 +1,13 @@
+# RAM caps for 16GB-laptop demo. Applied to backend (Spring Boot) charts only.
+# Without -Xmx the JVM sizes heap to ~25% of the node's 11G (~2.7G/pod) -> OOM.
+backend:
+  replicaCount: 1
+  extraEnvs:
+    - name: JAVA_TOOL_OPTIONS
+      value: "-Xmx320m -Xms128m -XX:MaxRAMPercentage=60"
+  resources:
+    requests:
+      cpu: 50m
+      memory: 320Mi
+    limits:
+      memory: 640Mi

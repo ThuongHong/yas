@@ -1,0 +1,33 @@
+# The bff images' application-prod.yaml routes the UI ('/') to service names
+# `storefront-nextjs` / `backoffice-nextjs`, but the UI charts create services named
+# `storefront-ui` / `backoffice-ui`. These alias Services bridge that gap (same
+# selectors/port) so the gateway can reach the UI pods without editing the images.
+apiVersion: v1
+kind: Service
+metadata:
+  name: storefront-nextjs
+  namespace: yas
+spec:
+  selector:
+    app.kubernetes.io/name: storefront-ui
+    app.kubernetes.io/instance: storefront-ui
+  ports:
+    - name: http
+      port: 3000
+      targetPort: http
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backoffice-nextjs
+  namespace: yas
+spec:
+  selector:
+    app.kubernetes.io/name: backoffice-ui
+    app.kubernetes.io/instance: backoffice-ui
+  ports:
+    - name: http
+      port: 3000
+      targetPort: http
+      protocol: TCP
