@@ -7,6 +7,7 @@ pipeline {
 
     environment {
         SONAR_TOKEN = credentials('sonar-token')
+        DOCKERHUB_USER = 'thuonghong'
     }
 
     stages {
@@ -102,7 +103,14 @@ pipeline {
             steps {
                 script {
                     sh 'mvn install -N -DskipTests'
-                    
+
+                    // Log in to Docker Hub once; the credential persists in the agent's
+                    // docker config for the parallel buildService calls that follow.
+                    withCredentials([usernamePassword(credentialsId: 'dockerhub-creds',
+                        usernameVariable: 'DH_USER', passwordVariable: 'DH_PASS')]) {
+                        sh 'echo "$DH_PASS" | docker login -u "$DH_USER" --password-stdin'
+                    }
+
                     def services = env.SERVICES_TO_BUILD.tokenize(',')
                     if (services.contains('common-library')) {
                         echo "Common library changed (or full build). Testing & scanning sequentially first!"
@@ -216,6 +224,26 @@ def buildService(String serviceName) {
             -Dsonar.coverage.jacoco.xmlReportPaths=${WORKSPACE}/${serviceName}/target/site/jacoco/jacoco.xml \
             -Dsonar.working.directory=${WORKSPACE}/target/sonar-${serviceName}
         """
+    }
+
+    // common-library is a shared jar, not a deployable service — no image to build.
+    if (serviceName != 'common-library') {
+        buildAndPushImage(serviceName)
+    }
+}
+
+def buildAndPushImage(String serviceName) {
+    def sha = env.GIT_COMMIT.take(7)
+    def repo = "${DOCKERHUB_USER}/yas-${serviceName}"
+
+    echo "--- Building image ${repo}:${sha} ---"
+    // Dockerfile copies the jar produced by the prior `mvn install` from target/.
+    sh "docker build -t ${repo}:${sha} ./${serviceName}"
+    sh "docker push ${repo}:${sha}"
+
+    if (env.BRANCH_NAME == 'main') {
+        sh "docker tag ${repo}:${sha} ${repo}:main && docker push ${repo}:main"
+        sh "docker tag ${repo}:${sha} ${repo}:latest && docker push ${repo}:latest"
     }
 }
 
