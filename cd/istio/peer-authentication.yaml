@@ -1,0 +1,13 @@
+# Sub-project F — mesh-wide mTLS, scoped to the `yas` namespace.
+# STRICT = meshed workloads only accept mTLS connections from other meshed workloads.
+# Scoped to `yas` (not the whole mesh) on purpose: the infra namespaces
+# (postgres/kafka/elasticsearch/keycloak/redis) have no sidecars, and app->DB traffic is
+# outbound to non-mesh endpoints, which STRICT inbound on `yas` does not break.
+apiVersion: security.istio.io/v1
+kind: PeerAuthentication
+metadata:
+  name: default
+  namespace: yas
+spec:
+  mtls:
+    mode: STRICT

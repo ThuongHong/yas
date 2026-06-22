@@ -44,33 +44,25 @@ storefront-bff, storefront-ui, backoffice-bff, backoffice-ui, swagger-ui, sample
 - [ ] **USER:** thêm `/etc/hosts`: `192.168.49.2 identity.yas.local.com backoffice.yas.local.com storefront.yas.local.com api.yas.local.com` để mở browser
 - [ ] **CÒN:** chưa commit scripts/chart fixes + checklist (Jenkinsfile A đã push)
 
-## C — Jenkins `developer_build` job  (core, req #4)
-- [ ] Pipeline job parameterized: 1 string param/service, default `main`
-- [ ] Resolve commit SHA cuối của branch param (`git ls-remote`) → `image.tag`
-- [ ] `helm upgrade --install` per service với tag override
-- [ ] In `domain:NodePort` cuối job cho dev
-- [ ] **Verify:** chạy với `tax_branch=dev_tax_service` → chỉ tax dùng image branch đó
+## C — Jenkins `developer_build` job  (core, req #4)  ✅ CODE DONE
+- Code: `cd/developer-build.Jenkinsfile`. Param branch/service (default main); branch≠main → resolve SHA (`git ls-remote`) → helm override `image.repository=thuonghong/yas-<svc>` tag=<sha>; others giữ baseline. In URLs cuối job.
+- [x] Validated: helm override deploy `thuonghong/yas-tax:144b4a0` → pod Running (đã revert baseline)
+- [ ] **Runtime:** tạo Jenkins Pipeline job trỏ tới `cd/developer-build.Jenkinsfile`; agent cần helm/kubectl/yq/git + kubeconfig
+- [ ] **Verify demo:** chạy `tax=<branch>` → chỉ tax dùng image branch đó
 
-## D — Jenkins delete job  (core, req #5)
-- [ ] Job param = namespace/release → `helm uninstall` / `kubectl delete ns`
-- [ ] Hyperlink trong job description tới C
-- [ ] **Verify:** chạy → deployment C bị xóa sạch
+## D — Jenkins delete job  (core, req #5)  ✅ CODE DONE
+- Code: `cd/delete.Jenkinsfile`. Param NAMESPACE/RELEASES/DELETE_NAMESPACE; link tới C qua DEVELOPER_BUILD_JOB_URL (build description).
+- [ ] **Runtime:** tạo job + set DEVELOPER_BUILD_JOB_URL; **Verify:** chạy → release C bị xóa
 
-## E — ArgoCD dev + staging  (nâng cao 2đ, thay req #6)
-- [ ] Cài ArgoCD (`ns argocd`)
-- [ ] Manifests env: `k8s/envs/dev/`, `k8s/envs/staging/`
-- [ ] App `dev`: track `main`, auto-sync → ns `dev`
-- [ ] App `staging`: track tag `v*` → ns `staging`
-- [ ] CI build image khi git tag `vX.Y.Z`
-- [ ] **Verify:** push main → dev auto-sync; tag v1.0.0 → staging deploy
+## E — ArgoCD dev + staging  (nâng cao 2đ, thay req #6)  ✅ CODE DONE
+- Code: `cd/argocd/` (appproject, dev-apps main+auto→ns dev, staging-apps tag v1.0.0+manual→ns staging, README). Subset: yas-configuration+product+storefront-bff+storefront-ui, dùng chung infra qua FQDN. CI tag-build đã thêm vào Jenkinsfile (`thuonghong/yas-<svc>:vX.Y.Z`).
+- [ ] **Runtime:** cài ArgoCD, apply manifests (xem cd/argocd/README.md). RAM: scale bớt yas ns trước.
+- [ ] **Verify:** push main → dev auto-sync; tag v1.0.0 + sync → staging
 
-## F — Istio + Kiali (mTLS, authz, retry)  (nâng cao 2đ)
-- [ ] `istioctl install --set profile=demo`; label ns `istio-injection=enabled`; redeploy
-- [ ] Kiali + prometheus addon
-- [ ] `PeerAuthentication` STRICT (mTLS toàn mesh)
-- [ ] `AuthorizationPolicy`: chỉ search→product allow, khác deny
-- [ ] `VirtualService` retry 500 cho tax (attempts:3)
-- [ ] **Verify + deliverable:** curl pod↔pod (allow/deny + retry log), screenshot Kiali topology, README
+## F — Istio + Kiali (mTLS, authz, retry)  (nâng cao 2đ)  ✅ CODE DONE
+- Code: `cd/istio/` (peer-authentication STRICT ns yas, authorization-policy product allow search-only, virtualservice tax retry×3, README). Authz demo dùng SA-based curl pod → không cần search app chạy.
+- [ ] **Runtime:** istioctl demo, label ns + restart, Kiali+Prometheus addon, apply configs (xem cd/istio/README.md). RAM: sidecar ~100Mi/pod.
+- [ ] **Verify + deliverable:** curl allow(200)/deny(403), tax retry log, screenshot Kiali
 
 ---
 
