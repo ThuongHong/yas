@@ -7,7 +7,9 @@ spec:
     tls:
       selfSignedCertificate:
         disabled: true
-  version: 8.8.1
+  # Must match the Elasticsearch Java client major shipped by Spring Boot 4 (9.x).
+  # Server 8.8.1 + client 9.x returns 400 on indices.exists and breaks the search service.
+  version: 9.0.4
   auth:
     fileRealm:
       - secretName: user-credentials-secret

@@ -1,0 +1,111 @@
+# ArgoCD Applications for the STAGING environment (sub-project E).
+# Tracks the release tag `v1.0.0` and deploys our versioned images
+# (thuonghong/yas-<svc>:v1.0.0, built by CI on git tag). Sync is MANUAL (no automated
+# block) so staging is promoted deliberately. Bump `targetRevision` + image tag to roll
+# a new release. Shares infra with dev/yas (cross-namespace FQDNs).
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: staging-yas-configuration
+  namespace: argocd
+spec:
+  project: yas-cd
+  source:
+    repoURL: https://github.com/ThuongHong/yas.git
+    targetRevision: v1.0.0
+    path: k8s/charts/yas-configuration
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: staging
+  syncPolicy:
+    syncOptions: [CreateNamespace=true]
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: staging-product
+  namespace: argocd
+spec:
+  project: yas-cd
+  source:
+    repoURL: https://github.com/ThuongHong/yas.git
+    targetRevision: v1.0.0
+    path: k8s/charts/product
+    helm:
+      values: |
+        backend:
+          replicaCount: 1
+          serviceMonitor:
+            enabled: false
+          image:
+            repository: thuonghong/yas-product
+            tag: v1.0.0
+          resources:
+            requests: { cpu: 50m, memory: 320Mi }
+            limits: { memory: 640Mi }
+          extraEnvs:
+            - name: JAVA_TOOL_OPTIONS
+              value: "-Xmx320m -Xms128m"
+          ingress:
+            host: api.staging.yas.local.com
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: staging
+  syncPolicy:
+    syncOptions: [CreateNamespace=true]
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: staging-storefront-bff
+  namespace: argocd
+spec:
+  project: yas-cd
+  source:
+    repoURL: https://github.com/ThuongHong/yas.git
+    targetRevision: v1.0.0
+    path: k8s/charts/storefront-bff
+    helm:
+      values: |
+        backend:
+          replicaCount: 1
+          serviceMonitor:
+            enabled: false
+          image:
+            repository: thuonghong/yas-storefront-bff
+            tag: v1.0.0
+          resources:
+            requests: { cpu: 50m, memory: 384Mi }
+            limits: { memory: 768Mi }
+          extraEnvs:
+            - name: SPRING_PROFILES_ACTIVE
+              value: prod
+            - name: UI_HOST
+              value: http://storefront-ui:3000
+            - name: JAVA_TOOL_OPTIONS
+              value: "-Xmx320m -Xms128m"
+          ingress:
+            host: storefront.staging.yas.local.com
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: staging
+  syncPolicy:
+    syncOptions: [CreateNamespace=true]
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: staging-storefront-ui
+  namespace: argocd
+spec:
+  project: yas-cd
+  source:
+    repoURL: https://github.com/ThuongHong/yas.git
+    targetRevision: v1.0.0
+    path: k8s/charts/storefront-ui
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: staging
+  syncPolicy:
+    syncOptions: [CreateNamespace=true]

@@ -1,0 +1,23 @@
+# ArgoCD AppProject for YAS CD (sub-project E). Scopes which repo + namespaces the
+# dev/staging Applications may use.
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: yas-cd
+  namespace: argocd
+spec:
+  description: YAS continuous delivery (dev + staging)
+  sourceRepos:
+    - https://github.com/ThuongHong/yas.git
+  destinations:
+    - server: https://kubernetes.default.svc
+      namespace: dev
+    - server: https://kubernetes.default.svc
+      namespace: staging
+  # Charts create cluster-scoped + namespaced objects; allow both within the project.
+  clusterResourceWhitelist:
+    - group: '*'
+      kind: '*'
+  namespaceResourceWhitelist:
+    - group: '*'
+      kind: '*'

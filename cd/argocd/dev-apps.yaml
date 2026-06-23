@@ -1,0 +1,109 @@
+# ArgoCD Applications for the DEV environment (sub-project E).
+# Tracks branch `main`, auto-syncs into namespace `dev`. Images use the ghcr `:latest`
+# baseline (reliable, no dependency on our :main tags). Backends reach the shared infra
+# in the postgres/kafka/elasticsearch/keycloak/redis namespaces via their FQDNs, so dev
+# does not run its own infra (16GB-laptop constraint).
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: dev-yas-configuration
+  namespace: argocd
+spec:
+  project: yas-cd
+  source:
+    repoURL: https://github.com/ThuongHong/yas.git
+    targetRevision: main
+    path: k8s/charts/yas-configuration
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: dev
+  syncPolicy:
+    automated: { prune: true, selfHeal: true }
+    syncOptions: [CreateNamespace=true]
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: dev-product
+  namespace: argocd
+spec:
+  project: yas-cd
+  source:
+    repoURL: https://github.com/ThuongHong/yas.git
+    targetRevision: main
+    path: k8s/charts/product
+    helm:
+      values: |
+        backend:
+          replicaCount: 1
+          serviceMonitor:
+            enabled: false
+          resources:
+            requests: { cpu: 50m, memory: 320Mi }
+            limits: { memory: 640Mi }
+          extraEnvs:
+            - name: JAVA_TOOL_OPTIONS
+              value: "-Xmx320m -Xms128m"
+          ingress:
+            host: api.dev.yas.local.com
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: dev
+  syncPolicy:
+    automated: { prune: true, selfHeal: true }
+    syncOptions: [CreateNamespace=true]
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: dev-storefront-bff
+  namespace: argocd
+spec:
+  project: yas-cd
+  source:
+    repoURL: https://github.com/ThuongHong/yas.git
+    targetRevision: main
+    path: k8s/charts/storefront-bff
+    helm:
+      values: |
+        backend:
+          replicaCount: 1
+          serviceMonitor:
+            enabled: false
+          resources:
+            requests: { cpu: 50m, memory: 384Mi }
+            limits: { memory: 768Mi }
+          extraEnvs:
+            - name: SPRING_PROFILES_ACTIVE
+              value: prod
+            - name: UI_HOST
+              value: http://storefront-ui:3000
+            - name: JAVA_TOOL_OPTIONS
+              value: "-Xmx320m -Xms128m"
+          ingress:
+            host: storefront.dev.yas.local.com
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: dev
+  syncPolicy:
+    automated: { prune: true, selfHeal: true }
+    syncOptions: [CreateNamespace=true]
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: dev-storefront-ui
+  namespace: argocd
+spec:
+  project: yas-cd
+  source:
+    repoURL: https://github.com/ThuongHong/yas.git
+    targetRevision: main
+    path: k8s/charts/storefront-ui
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: dev
+  syncPolicy:
+    automated: { prune: true, selfHeal: true }
+    syncOptions: [CreateNamespace=true]

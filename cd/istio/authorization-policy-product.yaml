@@ -1,0 +1,23 @@
+# Sub-project F — AuthorizationPolicy: only `search` may call `product`.
+# An ALLOW policy that selects the product workload makes everything NOT listed denied,
+# so this both allows search->product and denies all other callers (e.g. cart->product).
+#
+# NOTE: this intentionally blocks storefront-bff->product too (the storefront "featured
+# products" call), which is the point of the demo (observable RBAC deny). To keep the
+# storefront UI working while still demoing a deny, add storefront-bff's principal to the
+# list below: "cluster.local/ns/yas/sa/storefront-bff".
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: product-allow-search-only
+  namespace: yas
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: product
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals:
+              - cluster.local/ns/yas/sa/search

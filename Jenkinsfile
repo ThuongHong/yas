@@ -245,6 +245,12 @@ def buildAndPushImage(String serviceName) {
         sh "docker tag ${repo}:${sha} ${repo}:main && docker push ${repo}:main"
         sh "docker tag ${repo}:${sha} ${repo}:latest && docker push ${repo}:latest"
     }
+
+    // Git tag builds (vX.Y.Z) publish a release-tagged image that ArgoCD staging tracks.
+    // Requires the multibranch job's "Discover tags" trait so TAG_NAME is populated.
+    if (env.TAG_NAME ==~ /v\d+\.\d+\.\d+/) {
+        sh "docker tag ${repo}:${sha} ${repo}:${env.TAG_NAME} && docker push ${repo}:${env.TAG_NAME}"
+    }
 }
 
 def getSourcePaths() {
