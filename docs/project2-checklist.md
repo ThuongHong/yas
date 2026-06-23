@@ -27,7 +27,7 @@ storefront-bff, storefront-ui, backoffice-bff, backoffice-ui, swagger-ui, sample
 - [x] **Verify:** commit nhánh test → tag SHA push OK (`thuonghong/yas-tax:144b4a0` pull được)
 - [ ] Verify: merge main → tag `main`+`latest` xuất hiện (check khi merge PR đầu)
 
-## B — Minikube deploy subset (ingress)  (core, req #1,#2)  ✅ DONE (search degraded)
+## B — Minikube deploy subset (ingress)  (core, req #1,#2)  ✅ DONE
 - Chốt: **single-node** (lab cho phép 1M+1W *hoặc* Minikube/bất kỳ). 2-node×12G=24G không vừa host 15G.
 - Chốt: **ingress + /etc/hosts** (giữ Keycloak SSO). Cluster `--memory 11000 --disk 40000 --cpus 4`.
 - Chốt: baseline dùng **upstream ghcr `:latest`** (chart default). C mới swap image của ta.
@@ -40,7 +40,7 @@ storefront-bff, storefront-ui, backoffice-bff, backoffice-ui, swagger-ui, sample
 - [x] Fix gateway routes: chart dùng legacy `spring.cloud.gateway.routes`, image `:latest` đọc `server.webflux.routes` → re-path trong yas-configuration values
 - [x] **Verify:** storefront `/`→200, backoffice `/`→302(login), `/api/product`+`/api/tax` api-docs→200, swagger up
 - [x] sampledata deployed (Running; seed qua API on-demand, chưa trigger)
-- [ ] **CÒN:** search CrashLoop (ES8.8.1 + Spring Data ES client incompat trên indices.exists) → scaled 0. PHẢI fix trước F (mesh authz search→product).
+- [x] **search FIXED:** ES8.8.1 vs ES client 9.x (Spring Boot 4.0.2) → bump ES 9.0.4 trong chart. search 1/1, tạo index `product`.
 - [ ] **USER:** thêm `/etc/hosts`: `192.168.49.2 identity.yas.local.com backoffice.yas.local.com storefront.yas.local.com api.yas.local.com` để mở browser
 - [ ] **CÒN:** chưa commit scripts/chart fixes + checklist (Jenkinsfile A đã push)
 
