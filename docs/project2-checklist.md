@@ -56,8 +56,9 @@ storefront-bff, storefront-ui, backoffice-bff, backoffice-ui, swagger-ui, sample
 
 ## E — ArgoCD dev + staging  (nâng cao 2đ, thay req #6)  ✅ CODE DONE
 - Code: `cd/argocd/` (appproject, dev-apps main+auto→ns dev, staging-apps tag v1.0.0+manual→ns staging, README). Subset: yas-configuration+product+storefront-bff+storefront-ui, dùng chung infra qua FQDN. CI tag-build đã thêm vào Jenkinsfile (`thuonghong/yas-<svc>:vX.Y.Z`).
-- [ ] **Runtime:** cài ArgoCD, apply manifests (xem cd/argocd/README.md). RAM: scale bớt yas ns trước.
-- [ ] **Verify:** push main → dev auto-sync; tag v1.0.0 + sync → staging
+- [x] **Runtime DONE:** ArgoCD cài (ns argocd, apply --server-side vì CRD lớn), apply appproject+dev+staging.
+- [x] **Verified live:** 4 dev apps **Synced/Healthy**, ns `dev` pods 1/1 (product, storefront-bff, storefront-ui, yas-configuration) — auto-sync từ main. UI: `kubectl port-forward svc/argocd-server -n argocd 8080:443`, admin/(argocd-initial-admin-secret).
+- [ ] **staging:** apps Unknown — cần `git tag v1.0.0 && push` → CI build `thuonghong:v1.0.0` → sync. Deliverable demo.
 
 ## F — Istio + Kiali (mTLS, authz, retry)  (nâng cao 2đ)  ✅ CODE DONE
 - Code: `cd/istio/` (peer-authentication STRICT ns yas, authorization-policy product allow search-only, virtualservice tax retry×3, README). Authz demo dùng SA-based curl pod → không cần search app chạy.
