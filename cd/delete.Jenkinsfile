@@ -20,7 +20,30 @@ pipeline {
         string(name: 'DEVELOPER_BUILD_JOB_URL', defaultValue: '', description: 'URL of the developer-build job (shown in build description).')
     }
 
+    environment {
+        PATH = "${WORKSPACE}/bin:${PATH}"
+        HELM_VERSION    = 'v3.16.3'
+        KUBECTL_VERSION = 'v1.31.0'
+    }
+
     stages {
+        stage('Prepare tools (helm, kubectl)') {
+            steps {
+                sh '''
+                    mkdir -p "$WORKSPACE/bin"
+                    if ! command -v helm >/dev/null 2>&1 && [ ! -x "$WORKSPACE/bin/helm" ]; then
+                        curl -sSL "https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz" | tar xz -C /tmp
+                        mv /tmp/linux-amd64/helm "$WORKSPACE/bin/helm"
+                    fi
+                    if ! command -v kubectl >/dev/null 2>&1 && [ ! -x "$WORKSPACE/bin/kubectl" ]; then
+                        curl -sSL -o "$WORKSPACE/bin/kubectl" "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl"
+                    fi
+                    chmod +x "$WORKSPACE/bin/"* 2>/dev/null || true
+                    helm version --short; kubectl version --client 2>/dev/null | head -1
+                '''
+            }
+        }
+
         stage('Describe & link') {
             steps {
                 script {
@@ -34,6 +57,7 @@ pipeline {
 
         stage('Teardown') {
             steps {
+                withCredentials([file(credentialsId: 'minikube-kubeconfig', variable: 'KUBECONFIG')]) {
                 script {
                     def ns = params.NAMESPACE
                     def releases = params.RELEASES?.trim()?.replaceAll(',', ' ')?.split(/\s+/)?.findAll { it } ?: []
@@ -61,14 +85,17 @@ pipeline {
                         }
                     }
                 }
+                }
             }
         }
 
         stage('Verify') {
             steps {
+                withCredentials([file(credentialsId: 'minikube-kubeconfig', variable: 'KUBECONFIG')]) {
                 script {
                     sh "helm list -n ${params.NAMESPACE} || true"
                     sh "kubectl get pods -n ${params.NAMESPACE} 2>/dev/null || echo 'namespace gone'"
+                }
                 }
             }
         }
