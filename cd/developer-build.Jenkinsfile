@@ -71,6 +71,7 @@ pipeline {
                 script {
                     def services = env.SERVICES.split(',')
                     def deployed = []
+                    def deployedSvcs = []
 
                     for (svc in services) {
                         def branch = params[svc]
@@ -91,6 +92,7 @@ pipeline {
 
                         deployServiceImage(svc, tag)
                         deployed << "${svc} -> ${branch} (${tag})"
+                        deployedSvcs << svc
                     }
 
                     if (deployed.isEmpty()) {
@@ -99,26 +101,55 @@ pipeline {
                         echo "Deployed:\n  " + deployed.join('\n  ')
                     }
                     env.DEPLOYED_SUMMARY = deployed.join(', ')
+                    env.DEPLOYED_SVCS = deployedSvcs.join(',')
                 }
                 }
             }
         }
 
         stage('Print access URLs') {
+            // Requirement #4: expose each deployed service as a NodePort and hand the
+            // developer a `domain:port` plus the /etc/hosts line that points the domain at
+            // the worker node (no DNS in the cluster).
             steps {
+                withCredentials([file(credentialsId: 'minikube-kubeconfig', variable: 'KUBECONFIG')]) {
                 script {
-                    def ip = sh(script: 'minikube ip 2>/dev/null || echo "<minikube-ip>"', returnStdout: true).trim()
+                    def svcs = (env.DEPLOYED_SVCS ?: '').split(',').findAll { it }
+                    if (svcs.isEmpty()) {
+                        echo 'No service deployed (all params = main). Nothing to expose.'
+                        return
+                    }
+
+                    // Worker node IP the developer must point the domain at.
+                    def nodeIP = sh(
+                        script: 'kubectl get nodes -o jsonpath=\'{.items[0].status.addresses[?(@.type=="InternalIP")].address}\'',
+                        returnStdout: true
+                    ).trim()
+
+                    def hostsLines = []
+                    def urls = []
+                    for (svc in svcs) {
+                        def np = sh(
+                            script: "kubectl get svc ${svc} -n ${params.NAMESPACE} -o jsonpath='{.spec.ports[?(@.name==\"http\")].nodePort}'",
+                            returnStdout: true
+                        ).trim()
+                        hostsLines << "${nodeIP}  ${svc}.${params.DOMAIN}"
+                        urls << "  ${svc} : http://${svc}.${params.DOMAIN}:${np}   (health: /actuator/health, api: /v3/api-docs)"
+                    }
+
                     echo """
-==================== Developer build deployed ====================
+==================== Developer build — NodePort access ====================
 Updated services : ${env.DEPLOYED_SUMMARY ?: '(none)'}
 Namespace        : ${params.NAMESPACE}
 
-Access (add to /etc/hosts: '${ip} storefront.${params.DOMAIN} backoffice.${params.DOMAIN} api.${params.DOMAIN}'):
-  Storefront : http://storefront.${params.DOMAIN}
-  Backoffice : http://backoffice.${params.DOMAIN}
-  Swagger    : http://api.${params.DOMAIN}/swagger-ui
-==================================================================
+1) Add these lines to /etc/hosts on YOUR machine (domain -> worker node ${nodeIP}):
+${hostsLines.join('\n')}
+
+2) Then reach each service at domain:nodePort —
+${urls.join('\n')}
+===========================================================================
 """
+                }
                 }
             }
         }
@@ -150,6 +181,7 @@ def deployServiceImage(String svc, String tag) {
           --namespace ${params.NAMESPACE} --create-namespace \
           -f ${valuesFile} \
           --set backend.serviceMonitor.enabled=false \
+          --set backend.service.type=NodePort \
           --set backend.image.repository=${repo} \
           --set backend.image.tag=${tag} \
           --set backend.ingress.host=${ingressHost} \
