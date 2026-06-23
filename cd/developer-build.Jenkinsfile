@@ -33,6 +33,10 @@ pipeline {
         REPO_URL       = 'https://github.com/ThuongHong/yas.git'
         // Backend services that have a branch param (must match the parameters above).
         SERVICES = 'cart,customer,inventory,media,order,product,search,tax,storefront-bff,backoffice-bff'
+        // Self-installed helm/kubectl land here (the agent image has neither).
+        PATH = "${WORKSPACE}/bin:${PATH}"
+        HELM_VERSION    = 'v3.16.3'
+        KUBECTL_VERSION = 'v1.31.0'
     }
 
     stages {
@@ -40,8 +44,30 @@ pipeline {
             steps { checkout scm }
         }
 
+        stage('Prepare tools (helm, kubectl)') {
+            steps {
+                sh '''
+                    mkdir -p "$WORKSPACE/bin"
+                    if ! command -v helm >/dev/null 2>&1 && [ ! -x "$WORKSPACE/bin/helm" ]; then
+                        curl -sSL "https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz" | tar xz -C /tmp
+                        mv /tmp/linux-amd64/helm "$WORKSPACE/bin/helm"
+                    fi
+                    if ! command -v kubectl >/dev/null 2>&1 && [ ! -x "$WORKSPACE/bin/kubectl" ]; then
+                        curl -sSL -o "$WORKSPACE/bin/kubectl" "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl"
+                    fi
+                    chmod +x "$WORKSPACE/bin/"* 2>/dev/null || true
+                    helm version --short
+                    kubectl version --client 2>/dev/null | head -1
+                '''
+            }
+        }
+
         stage('Resolve & Deploy selected services') {
             steps {
+                // minikube-kubeconfig: Jenkins "Secret file" credential holding a flattened
+                // kubeconfig (kubectl config view --flatten --minify > kubeconfig) whose server
+                // URL is reachable from the agent (see README / network note).
+                withCredentials([file(credentialsId: 'minikube-kubeconfig', variable: 'KUBECONFIG')]) {
                 script {
                     def services = env.SERVICES.split(',')
                     def deployed = []
@@ -73,6 +99,7 @@ pipeline {
                         echo "Deployed:\n  " + deployed.join('\n  ')
                     }
                     env.DEPLOYED_SUMMARY = deployed.join(', ')
+                }
                 }
             }
         }
