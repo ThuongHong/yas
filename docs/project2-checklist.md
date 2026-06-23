@@ -61,8 +61,9 @@ storefront-bff, storefront-ui, backoffice-bff, backoffice-ui, swagger-ui, sample
 
 ## F — Istio + Kiali (mTLS, authz, retry)  (nâng cao 2đ)  ✅ CODE DONE
 - Code: `cd/istio/` (peer-authentication STRICT ns yas, authorization-policy product allow search-only, virtualservice tax retry×3, README). Authz demo dùng SA-based curl pod → không cần search app chạy.
-- [ ] **Runtime:** istioctl demo, label ns + restart, Kiali+Prometheus addon, apply configs (xem cd/istio/README.md). RAM: sidecar ~100Mi/pod.
-- [ ] **Verify + deliverable:** curl allow(200)/deny(403), tax retry log, screenshot Kiali
+- [x] **Runtime DONE:** istioctl 1.24.3 demo, ns yas injected, sidecars 2/2, 3 policies applied. Scale down backoffice-bff/ui+swagger+sampledata+media để lấy RAM (restore sau).
+- [x] **Verified live:** mTLS STRICT; search→product:8090 **200** (via Envoy), cart→product **403 RBAC**; tax route numRetries=3 retryOn 5xx.
+- [ ] **Deliverable:** screenshot Kiali topology — `istioctl dashboard kiali` (Graph → ns yas, padlock=mTLS).
 
 ---
 
