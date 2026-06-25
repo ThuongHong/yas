@@ -1,12 +1,11 @@
 # ArgoCD Applications for the STAGING environment (sub-project E).
-# Tracks the `main` branch and deploys the rolling `:latest` image
-# (thuonghong/yas-backoffice-bff:latest, published by the CI main-branch build). Sync is
-# MANUAL (no automated block) so staging is promoted deliberately. Shares infra with
-# dev/yas (cross-namespace FQDNs).
+# Tracks the release tag `v1.1.0` and deploys our versioned image
+# (thuonghong/yas-backoffice-bff:v1.1.0, built by CI on the git tag). Sync is MANUAL
+# (no automated block) so staging is promoted deliberately. Bump `targetRevision` + image
+# tag to roll a new release. Shares infra with dev/yas (cross-namespace FQDNs).
 #
-# We track main/:latest instead of a git tag: main and latest point at the same commit,
-# so a separate vX.Y.Z tag build is redundant for this demo. backoffice-bff is the
-# release-bearing service (product/storefront-bff are omitted).
+# backoffice-bff is the release-bearing service here; product/storefront-bff are omitted
+# because their SonarQube quality gate currently fails (no v1.x image is published).
 ---
 apiVersion: argoproj.io/v1alpha1
 kind: Application
@@ -17,7 +16,7 @@ spec:
   project: yas-cd
   source:
     repoURL: https://github.com/ThuongHong/yas.git
-    targetRevision: main
+    targetRevision: v1.1.0
     path: k8s/charts/yas-configuration
   destination:
     server: https://kubernetes.default.svc
@@ -34,7 +33,7 @@ spec:
   project: yas-cd
   source:
     repoURL: https://github.com/ThuongHong/yas.git
-    targetRevision: main
+    targetRevision: v1.1.0
     path: k8s/charts/backoffice-bff
     helm:
       values: |
@@ -44,7 +43,7 @@ spec:
             enabled: false
           image:
             repository: thuonghong/yas-backoffice-bff
-            tag: latest
+            tag: v1.1.0
           resources:
             requests: { cpu: 50m, memory: 384Mi }
             limits: { memory: 768Mi }
@@ -72,7 +71,7 @@ spec:
   project: yas-cd
   source:
     repoURL: https://github.com/ThuongHong/yas.git
-    targetRevision: main
+    targetRevision: v1.1.0
     path: k8s/charts/storefront-ui
   destination:
     server: https://kubernetes.default.svc
