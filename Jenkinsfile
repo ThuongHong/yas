@@ -242,7 +242,7 @@ def buildAndPushImage(String serviceName) {
     sh "docker push ${repo}:${sha}"
 
     if (env.BRANCH_NAME == 'main') {
-        sh "docker tag ${repo}:${sha} ${repo}:main && docker push ${repo}:main"
+        // main and latest would point at the same commit, so publish only `latest`.
         sh "docker tag ${repo}:${sha} ${repo}:latest && docker push ${repo}:latest"
     }
 
