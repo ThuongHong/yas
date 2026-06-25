@@ -2,6 +2,7 @@ package com.yas.sampledata.config;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -39,8 +40,12 @@ public class SecurityConfig {
     public JwtAuthenticationConverter jwtAuthenticationConverterForKeycloak() {
         Converter<Jwt, Collection<GrantedAuthority>> jwtGrantedAuthoritiesConverter = jwt -> {
             Map<String, Collection<String>> realmAccess = jwt.getClaim("realm_access");
-            Collection<String> roles = realmAccess.get("roles");
+            Collection<String> roles = realmAccess == null ? null : realmAccess.get("roles");
+            if (roles == null) {
+                return java.util.List.of();
+            }
             return roles.stream()
+                .filter(Objects::nonNull)
                 .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
                 .collect(Collectors.toList());
         };
