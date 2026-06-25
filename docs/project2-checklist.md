@@ -44,15 +44,18 @@ storefront-bff, storefront-ui, backoffice-bff, backoffice-ui, swagger-ui, sample
 - [ ] **USER:** thêm `/etc/hosts`: `192.168.49.2 identity.yas.local.com backoffice.yas.local.com storefront.yas.local.com api.yas.local.com` để mở browser
 - [ ] **CÒN:** chưa commit scripts/chart fixes + checklist (Jenkinsfile A đã push)
 
-## C — Jenkins `developer_build` job  (core, req #4)  ✅ CODE DONE
-- Code: `cd/developer-build.Jenkinsfile`. Param branch/service (default main); branch≠main → resolve SHA (`git ls-remote`) → helm override `image.repository=thuonghong/yas-<svc>` tag=<sha>; others giữ baseline. In URLs cuối job.
-- [x] Validated: helm override deploy `thuonghong/yas-tax:144b4a0` → pod Running (đã revert baseline)
-- [ ] **Runtime:** tạo Jenkins Pipeline job trỏ tới `cd/developer-build.Jenkinsfile`; agent cần helm/kubectl/yq/git + kubeconfig
-- [ ] **Verify demo:** chạy `tax=<branch>` → chỉ tax dùng image branch đó
+## C — Jenkins `developer_build` job  (core, req #4)  ✅ DONE + VERIFIED LIVE
+- Code: `cd/developer-build.Jenkinsfile`. Param branch/service (default main); branch≠main → resolve SHA (`git ls-remote`) → helm override `image.repository=thuonghong/yas-<svc>` tag=<sha>; others giữ baseline.
+- [x] **NodePort (req #4):** deploy `--set backend.service.type=NodePort`; Print stage query nodePort thật + node InternalIP → in dòng `/etc/hosts` + `http://<svc>.<domain>:<nodePort>`. Bỏ `minikube ip` (agent không có) → `kubectl get nodes` InternalIP. (PR #19 merged → main)
+- [x] **Runtime job created:** `yas-developer-build` Pipeline, agent self-install helm/kubectl, cred `minikube-kubeconfig`.
+- [x] **Verified live:** `tax=dev_tax_service` → deploy `thuonghong/yas-tax:7826c99` (rev 2), in `http://tax.yas.local.com:31823`, node IP 192.168.49.2. GREEN.
+- ⚠️ NodePort plaintext bị **mTLS STRICT (F)** chặn từ host → `000`. Demo browse cần tạm PERMISSIVE hoặc tách ns. Log job đã đủ deliverable req #4.
 
-## D — Jenkins delete job  (core, req #5)  ✅ CODE DONE
+## D — Jenkins delete job  (core, req #5)  ✅ DONE + VERIFIED LIVE
 - Code: `cd/delete.Jenkinsfile`. Param NAMESPACE/RELEASES/DELETE_NAMESPACE; link tới C qua DEVELOPER_BUILD_JOB_URL (build description).
-- [ ] **Runtime:** tạo job + set DEVELOPER_BUILD_JOB_URL; **Verify:** chạy → release C bị xóa
+- [x] **Runtime job created:** `yas-delete` Pipeline.
+- [x] **Verified live:** `RELEASES=tax` → `release "tax" uninstalled`, helm list còn mỗi `yas-configuration`, tax pod Terminating. GREEN.
+- [ ] **Check:** hyperlink req #5 hiện ở ĐẦU trang build (không phải log). Nếu trống → re-run set DEVELOPER_BUILD_JOB_URL = URL job C.
 
 ## E — ArgoCD dev + staging  (nâng cao 2đ, thay req #6)  ✅ CODE DONE
 - Code: `cd/argocd/` (appproject, dev-apps main+auto→ns dev, staging-apps tag v1.0.0+manual→ns staging, README). Subset: yas-configuration+product+storefront-bff+storefront-ui, dùng chung infra qua FQDN. CI tag-build đã thêm vào Jenkinsfile (`thuonghong/yas-<svc>:vX.Y.Z`).
@@ -67,6 +70,28 @@ storefront-bff, storefront-ui, backoffice-bff, backoffice-ui, swagger-ui, sample
 - [ ] **Deliverable:** screenshot Kiali topology — `istioctl dashboard kiali` (Graph → ns yas, padlock=mTLS).
 
 ---
+
+---
+
+## TRẠNG THÁI CUỐI (2026-06-23): tất cả A–F code xong + verify live
+- A ✅ CI tag SHA → Docker Hub | B ✅ subset deploy live (search fixed) | C ✅ NodePort job GREEN | D ✅ delete job GREEN | E ✅ ArgoCD dev Synced/Healthy | F ✅ mTLS/authz/retry live.
+- Còn lại = **deliverable screenshot** cho báo cáo, KHÔNG cần code.
+
+## Demo: KHÔNG cần 14 svc cùng lúc (RAM 15GB không kham + Istio + ArgoCD)
+- #3 CI: chỉ Jenkins build → Docker Hub, không cần cluster.
+- #4 C: `yas-configuration` + 1 svc (tax) NodePort.
+- #5 D: cùng trên, xóa.
+- ArgoCD: subset nhỏ ns `dev`.
+- Istio: vài svc ns `yas`.
+- Mỗi demo set up tối thiểu rồi tear down lấy RAM cho cái kế.
+- Chỉ **B (shop UI browse)** mới cần full subset, chạy 1 lần để chụp.
+
+## Pending deliverable (chụp màn hình, không code)
+- [ ] ArgoCD **staging**: `git tag v1.0.0 && push` → CI build `:v1.0.0` → app staging Synced.
+- [ ] **Kiali topology** screenshot (`istioctl dashboard kiali`, padlock=mTLS).
+- [ ] B shop UI browse (restore full subset 1 lần nếu cần ảnh).
+- [ ] A: verify tag `main`+`latest` khi merge PR.
+- [ ] Hyperlink req #5 ở trang build D (set DEVELOPER_BUILD_JOB_URL nếu trống).
 
 ## Thứ tự: A → B → C → D → (E ∥ F)
 ## Nộp: báo cáo screenshot từng bước, file `<MSSV...>.docx`, nhóm 4 SV
