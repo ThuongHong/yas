@@ -67,7 +67,7 @@ storefront-bff, storefront-ui, backoffice-bff, backoffice-ui, swagger-ui, sample
 - Code: `cd/istio/` (peer-authentication STRICT ns yas, authorization-policy product allow search-only, virtualservice tax retry×3, README). Authz demo dùng SA-based curl pod → không cần search app chạy.
 - [x] **Runtime DONE:** istioctl 1.24.3 demo, ns yas injected, sidecars 2/2, 3 policies applied. Scale down backoffice-bff/ui+swagger+sampledata+media để lấy RAM (restore sau).
 - [x] **Verified live:** mTLS STRICT; search→product:8090 **200** (via Envoy), cart→product **403 RBAC**; tax route numRetries=3 retryOn 5xx.
-- [ ] **Deliverable:** screenshot Kiali topology — `istioctl dashboard kiali` (Graph → ns yas, padlock=mTLS).
+- [x] **Deliverable DONE:** Kiali topology (ns yas, 8 apps/17 edges) → report Hình 22. Retry evidence: tax route tạm trỏ httpbin /status/503, 1 call → 4 upstream attempts (1+3 retry), client 503 `response_flags=URX` → report Hình 21. Repro: `cd/istio/README.md`.
 
 ---
 
@@ -88,7 +88,7 @@ storefront-bff, storefront-ui, backoffice-bff, backoffice-ui, swagger-ui, sample
 
 ## Pending deliverable (chụp màn hình, không code)
 - [ ] ArgoCD **staging**: `git tag v1.0.0 && push` → CI build `:v1.0.0` → app staging Synced.
-- [ ] **Kiali topology** screenshot (`istioctl dashboard kiali`, padlock=mTLS).
+- [x] **Kiali topology** screenshot DONE → Hình 22. Retry evidence DONE → Hình 21.
 - [ ] B shop UI browse (restore full subset 1 lần nếu cần ảnh).
 - [ ] A: verify tag `main`+`latest` khi merge PR.
 - [ ] Hyperlink req #5 ở trang build D (set DEVELOPER_BUILD_JOB_URL nếu trống).

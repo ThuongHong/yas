@@ -49,10 +49,26 @@ kubectl run t-deny -n yas --rm -it --image=curlimages/curl --overrides='{"spec":
   curl -s -o /dev/null -w "%{http_code}\n" http://product/actuator/health
 ```
 
-**Retry (tax)** — watch the istio-proxy access log on tax show repeated upstream attempts
-when tax returns 5xx; Kiali edge to tax shows the retry/error rate:
+**Retry (tax)** — `attempts: 3` in the VirtualService means Envoy adds up to 3 retries
+(4 upstream attempts total) on a 5xx. To produce a deterministic 5xx for evidence,
+temporarily route the `tax` host to a fault source (`httpbin /status/503`), then count
+the upstream attempts for a single client call:
 ```sh
-kubectl logs -n yas -l app.kubernetes.io/name=tax -c istio-proxy --tail=20
+# deploy a deterministic 5xx source
+kubectl apply -n yas -f https://raw.githubusercontent.com/istio/istio/release-1.24/samples/httpbin/httpbin.yaml
+# temporarily point the tax-retry VirtualService route at httpbin (keep the retries block)
+kubectl patch virtualservice tax-retry -n yas --type=merge -p \
+  '{"spec":{"http":[{"route":[{"destination":{"host":"httpbin","port":{"number":8000}}}],"retries":{"attempts":3,"perTryTimeout":"2s","retryOn":"5xx,gateway-error,connect-failure,reset"}}]}}'
+
+# ONE client call -> Envoy retries -> httpbin sees 4 attempts (1 + 3 retries)
+kubectl exec -n yas deploy/order -c order -- wget -qO- -S http://tax:8090/status/503
+kubectl logs -n yas deploy/httpbin -c httpbin --since=5s | grep -c 'GET /status/503'   # -> 4
+# client sidecar logs response_flags=URX (retry limit exceeded)
+kubectl logs -n yas deploy/order -c istio-proxy --since=6s | grep status/503
+
+# restore the real route + clean up
+kubectl apply -f cd/istio/virtualservice-tax-retry.yaml
+kubectl delete -n yas -f https://raw.githubusercontent.com/istio/istio/release-1.24/samples/httpbin/httpbin.yaml
 ```
 
 Screenshot the Kiali topology (padlocks + traffic) for the report.
