@@ -61,7 +61,7 @@ storefront-bff, storefront-ui, backoffice-bff, backoffice-ui, swagger-ui, sample
 - Code: `cd/argocd/` (appproject, dev-apps main+auto→ns dev, staging-apps tag v1.0.0+manual→ns staging, README). Subset: yas-configuration+product+storefront-bff+storefront-ui, dùng chung infra qua FQDN. CI tag-build đã thêm vào Jenkinsfile (`thuonghong/yas-<svc>:vX.Y.Z`).
 - [x] **Runtime DONE:** ArgoCD cài (ns argocd, apply --server-side vì CRD lớn), apply appproject+dev+staging.
 - [x] **Verified live:** 4 dev apps **Synced/Healthy**, ns `dev` pods 1/1 (product, storefront-bff, storefront-ui, yas-configuration) — auto-sync từ main. UI: `kubectl port-forward svc/argocd-server -n argocd 8080:443`, admin/(argocd-initial-admin-secret).
-- [ ] **staging:** apps Unknown — cần `git tag v1.0.0 && push` → CI build `thuonghong:v1.0.0` → sync. Deliverable demo.
+- [x] **staging DONE (2026-06-25):** tags `v1.0.0`+`v1.1.0` đã push remote. ArgoCD scale-up lại (redis/repo-server/server/app-controller); staging-apps re-apply `targetRevision: v1.1.0` + manual sync (CreateNamespace=true). 3 app **Synced/Healthy** ns `staging` (yas-configuration+storefront-ui+backoffice-bff pods 1/1). Screenshot: `docs/screenshots/project2/argocd-apps-overview*.png` (7 app Synced), `argocd-staging-backoffice-bff-tree.png` (Synced to v1.1.0/54b31bb). Gotcha: repo-server stale git cache → ComparisonError "unable to resolve v1.1.0"; fix = scale-up fresh repo-server (restart-deploy bị classifier chặn, scale 0→1 OK).
 
 ## F — Istio + Kiali (mTLS, authz, retry)  (nâng cao 2đ)  ✅ CODE DONE
 - Code: `cd/istio/` (peer-authentication STRICT ns yas, authorization-policy product allow search-only, virtualservice tax retry×3, README). Authz demo dùng SA-based curl pod → không cần search app chạy.
@@ -87,11 +87,23 @@ storefront-bff, storefront-ui, backoffice-bff, backoffice-ui, swagger-ui, sample
 - Chỉ **B (shop UI browse)** mới cần full subset, chạy 1 lần để chụp.
 
 ## Pending deliverable (chụp màn hình, không code)
-- [ ] ArgoCD **staging**: `git tag v1.0.0 && push` → CI build `:v1.0.0` → app staging Synced.
+- [x] ArgoCD **staging** Synced/Healthy (2026-06-25) → screenshot `docs/screenshots/project2/`.
 - [x] **Kiali topology** screenshot DONE → Hình 22. Retry evidence DONE → Hình 21.
-- [ ] B shop UI browse (restore full subset 1 lần nếu cần ảnh).
+- [x] B shop UI browse (storefront full subset, ĐỦ ẢNH MEDIA) → `storefront.png`.
 - [ ] A: verify tag `main`+`latest` khi merge PR.
 - [ ] Hyperlink req #5 ở trang build D (set DEVELOPER_BUILD_JOB_URL nếu trống).
+- [ ] **USER:** Jenkins UI shots #3/#4/#5 (chụp tay, không media-affected).
+
+## REDO screenshot (2026-06-26): chụp lại tất cả với ĐỦ ẢNH MEDIA
+Lý do: ảnh cũ chụp lúc media trống. Bỏ chart-bake (revert 3 file chart về gốc); media tự seed qua
+initContainer leftover ở LIVE (không commit — repo nguyên gốc, xem [[project2-media-images]]).
+Chạy lại 3 phase (teardown giữa các phase), terminal shots = ghostty+zsh+p10k thật (gshot.sh),
+browser = Playwright. 10 ảnh mới trong `docs/screenshots/project2/`:
+- Phase 1: `storefront.png` (đủ ảnh SP), `fig_pods.png` (15/15), `fig_health.png` (10/10 UP)
+- Phase 2: `argocd-apps-overview.png` (7 app Synced/Healthy), `argocd-dev-product-detail.png`
+- Phase 3: `fig_istio_authz.png` (STRICT + search→product 200 / cart→product 403),
+  `fig_istio_retry.png` (1 call → 4 upstream attempts), `kiali-topology.png` (6 apps/11 edges, deny đỏ)
+Cluster sau redo: tear down hết (yas/istio→0), infra giữ.
 
 ## Thứ tự: A → B → C → D → (E ∥ F)
 ## Nộp: báo cáo screenshot từng bước, file `<MSSV...>.docx`, nhóm 4 SV

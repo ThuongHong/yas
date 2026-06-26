@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<indexing>
+ <object alt="" name="Picture 1" object_type="graphic"/>
+ <object alt="" name="Image6" object_type="graphic"/>
+ <object alt="" name="Picture 3" object_type="graphic"/>
+ <object alt="" name="Picture 4" object_type="graphic"/>
+ <object alt="" name="Picture 5" object_type="graphic"/>
+ <object alt="" name="Picture 6" object_type="graphic"/>
+ <object alt="" name="Picture 7" object_type="graphic"/>
+ <object alt="" name="Image5" object_type="graphic"/>
+ <object alt="" name="Picture 8" object_type="graphic"/>
+ <object alt="" name="Picture 9" object_type="graphic"/>
+ <object alt="" name="Picture 10" object_type="graphic"/>
+ <object alt="" name="Picture 11" object_type="graphic"/>
+ <object alt="" name="Picture 12" object_type="graphic"/>
+ <object alt="" name="Picture 13" object_type="graphic"/>
+ <object alt="" name="Picture 14" object_type="graphic"/>
+ <object alt="" name="Picture 15" object_type="graphic"/>
+ <object alt="" name="Image3" object_type="graphic"/>
+ <object alt="" name="Image1" object_type="graphic"/>
+ <object alt="" name="Picture 16" object_type="graphic"/>
+ <object alt="" name="Image4" object_type="graphic"/>
+ <object alt="" name="Image2" object_type="graphic"/>
+ <object alt="" name="Picture 17" object_type="graphic"/>
+ <object alt="" name="Picture 18" object_type="graphic"/>
+ <object alt="" name="Picture 19" object_type="graphic"/>
+ <object alt="" name="Picture 20" object_type="graphic"/>
+ <paragraph index="102" node_type="writer">Báo cáo Đồ án 2: Triển khai hệ thống CD</paragraph>
+ <paragraph index="103" node_type="writer">Mục lục</paragraph>
+ <paragraph index="105" node_type="writer">I. Thành viên nhóm</paragraph>
+ <paragraph index="106" node_type="writer">Đồ án được thực hiện bởi nhóm gồm 4 sinh viên:</paragraph>
+ <object index="107" name="Table1" object_type="table"/>
+ <paragraph index="109" node_type="writer" parent_index="107">STT</paragraph>
+ <paragraph index="112" node_type="writer" parent_index="107">Họ và tên</paragraph>
+ <paragraph index="115" node_type="writer" parent_index="107">MSSV</paragraph>
+ <paragraph index="118" node_type="writer" parent_index="107">1</paragraph>
+ <paragraph index="121" node_type="writer" parent_index="107">Lưu Thượng Hồng</paragraph>
+ <paragraph index="124" node_type="writer" parent_index="107">23122006</paragraph>
+ <paragraph index="127" node_type="writer" parent_index="107">2</paragraph>
+ <paragraph index="130" node_type="writer" parent_index="107">Nguyễn Thiên Ấn</paragraph>
+ <paragraph index="133" node_type="writer" parent_index="107">23122020</paragraph>
+ <paragraph index="136" node_type="writer" parent_index="107">3</paragraph>
+ <paragraph index="139" node_type="writer" parent_index="107">Lê Nguyên Khang</paragraph>
+ <paragraph index="142" node_type="writer" parent_index="107">23122034</paragraph>
+ <paragraph index="145" node_type="writer" parent_index="107">4</paragraph>
+ <paragraph index="148" node_type="writer" parent_index="107">Nguyễn Ngọc Khoa</paragraph>
+ <paragraph index="151" node_type="writer" parent_index="107">23122036</paragraph>
+ <paragraph index="155" node_type="writer">II. Mở đầu</paragraph>
+ <paragraph index="156" node_type="writer">Đồ án tiếp nối Đồ án 1 (quy trình Continuous Integration), mở rộng sang xây dựng hệ thống Continuous Deployment (CD) hoàn chỉnh cho dự án mã nguồn mở YAS (Yet Another Shop) — hệ thống thương mại điện tử kiến trúc microservice, viết bằng Java/Spring Boot. Theo đó, báo cáo trình bày quy trình triển khai tự động từ mã nguồn tới cụm Kubernetes, kèm bằng chứng vận hành cho từng yêu cầu.</paragraph>
+ <paragraph index="157" node_type="writer">Nhóm xây dựng hệ thống CD trên nền tảng Kubernetes (Minikube), với Jenkins giữ vai trò điều phối pipeline. Ngoài ba yêu cầu cốt lõi (build và push image theo commit, job triển khai cho developer, job xoá triển khai), nhóm hoàn thành cả hai phần Nâng cao: quản lý môi trường dev/staging bằng ArgoCD theo mô hình GitOps, và cấu hình Service Mesh (Istio + Kiali) cho mTLS, authorization policy cùng cơ chế retry. Do đó phạm vi triển khai phủ toàn bộ thang điểm của đề bài.</paragraph>
+ <paragraph index="158" node_type="writer">Repository của nhóm: https://github.com/ThuongHong/yas — Docker Hub registry: thuonghong/yas-&lt;service&gt;.</paragraph>
+ <paragraph index="159" node_type="writer">III. Giải pháp và Triển khai</paragraph>
+ <paragraph index="160" node_type="writer">Dưới đây là chi tiết các bước triển khai theo từng yêu cầu cụ thể của đồ án.</paragraph>
+ <paragraph index="161" node_type="writer">3.1. Tổng quan kiến trúc và môi trường</paragraph>
+ <paragraph index="162" node_type="writer">Toàn bộ hệ thống chạy trên một laptop với 15GB RAM; căn cứ vào giới hạn tài nguyên này, nhóm chọn mô hình Minikube single-node. Đề bài cho phép dùng “1 Master node và 1 worker node, hoặc Minikube, hoặc bất kỳ mô hình K8S nào”, do đó cấu hình single-node là hợp lệ — node duy nhất đồng thời đảm nhận vai trò control-plane và worker.</paragraph>
+ <paragraph index="163" node_type="writer">Nhóm khởi tạo cluster với 11GB RAM, 4 CPU, kèm addon ingress để định tuyến HTTP:</paragraph>
+ <object index="164" name="Table2" object_type="table"/>
+ <paragraph index="166" node_type="writer" parent_index="164">minikube start --nodes 1 --memory 11000 --disk-size 40000 --cpus 4</paragraph>
+ <paragraph index="167" node_type="writer" parent_index="164">minikube addons enable ingress</paragraph>
+ <paragraph index="171" node_type="writer">Nhóm cài các thành phần hạ tầng (infra) qua script k8s/deploy/setup-cluster-min.sh, gồm:</paragraph>
+ <paragraph index="172" node_type="writer">• PostgreSQL (Zalando postgres-operator) — cơ sở dữ liệu cho các service.</paragraph>
+ <paragraph index="173" node_type="writer">• Apache Kafka (Strimzi operator) — nhóm ghim phiên bản 0.45.2, vì các bản mới chỉ hỗ trợ KRaft (bỏ ZooKeeper, bỏ API v1beta2), chưa tương thích cấu hình hiện tại.</paragraph>
+ <paragraph index="174" node_type="writer">• Elasticsearch (ECK operator) — phục vụ service search.</paragraph>
+ <paragraph index="175" node_type="writer">• Keycloak — định danh / SSO (OAuth2).</paragraph>
+ <paragraph index="176" node_type="writer">• Redis (Bitnami) — cache.</paragraph>
+ <paragraph index="177" node_type="writer">Căn cứ giới hạn RAM, nhóm chạy một tập con (subset) gồm 14 service tiêu biểu thay vì toàn bộ hệ thống: product, cart, order, customer, inventory, tax, media, search, storefront-bff, storefront-ui, backoffice-bff, backoffice-ui, swagger-ui và sampledata (seed dữ liệu mẫu). Tập này phủ cả luồng mua hàng (storefront) lẫn quản trị (backoffice), đồng thời giữ mức tiêu thụ RAM trong ngưỡng cho phép.</paragraph>
+ <paragraph index="179" node_type="writer">Hình 1: Mô hình kiến trúc hệ thống CD trên Minikube.</paragraph>
+ <paragraph index="180" node_type="writer">3.2. CI: Build image theo commit và push lên Docker Hub (Yêu cầu 3)</paragraph>
+ <paragraph index="181" node_type="writer">Mỗi khi developer commit lên một branch, pipeline build Docker image với tag bằng 7 ký tự đầu của commit SHA rồi push lên Docker Hub. Đối với branch main, image sau khi được build sẽ được gắn thêm tag latest để làm phiên bản mặc định khi triển khai. Ngoài ra, pipeline còn hỗ trợ các Git tag dạng vX.Y.Z, tạo thêm image mang tag release tương ứng nhằm phục vụ triển khai môi trường staging bằng ArgoCD.</paragraph>
+ <paragraph index="182" node_type="writer">Đoạn cấu hình trong Jenkinsfile (hàm buildAndPushImage):</paragraph>
+ <object index="183" name="Table3" object_type="table"/>
+ <paragraph index="185" node_type="writer" parent_index="183">def buildAndPushImage(String serviceName) {</paragraph>
+ <paragraph index="186" node_type="writer" parent_index="183">    def sha = env.GIT_COMMIT.take(7)</paragraph>
+ <paragraph index="187" node_type="writer" parent_index="183">    def repo = &quot;${DOCKERHUB_USER}/yas-${serviceName}&quot;</paragraph>
+ <paragraph index="189" node_type="writer" parent_index="183">    echo &quot;--- Building image ${repo}:${sha} ---&quot;</paragraph>
+ <paragraph index="190" node_type="writer" parent_index="183">    // Dockerfile copies the jar produced by the prior `mvn install` from target/.</paragraph>
+ <paragraph index="191" node_type="writer" parent_index="183">    sh &quot;docker build -t ${repo}:${sha} ./${serviceName}&quot;</paragraph>
+ <paragraph index="192" node_type="writer" parent_index="183">    sh &quot;docker push ${repo}:${sha}&quot;</paragraph>
+ <paragraph index="194" node_type="writer" parent_index="183">    if (env.BRANCH_NAME == 'main') {</paragraph>
+ <paragraph index="195" node_type="writer" parent_index="183">        // main and latest would point at the same commit, so publish only `latest`.</paragraph>
+ <paragraph index="196" node_type="writer" parent_index="183">        sh &quot;docker tag ${repo}:${sha} ${repo}:latest &amp;&amp; docker push ${repo}:latest&quot;</paragraph>
+ <paragraph index="197" node_type="writer" parent_index="183">    }</paragraph>
+ <paragraph index="199" node_type="writer" parent_index="183">    // Git tag builds (vX.Y.Z) publish a release-tagged image that ArgoCD staging tracks.</paragraph>
+ <paragraph index="200" node_type="writer" parent_index="183">    // Requires the multibranch job's &quot;Discover tags&quot; trait so TAG_NAME is populated.</paragraph>
+ <paragraph index="201" node_type="writer" parent_index="183">    if (env.TAG_NAME ==~ /v\d+\.\d+\.\d+/) {</paragraph>
+ <paragraph index="202" node_type="writer" parent_index="183">        sh &quot;docker tag ${repo}:${sha} ${repo}:${env.TAG_NAME} &amp;&amp; docker push ${repo}:${env.TAG_NAME}&quot;</paragraph>
+ <paragraph index="203" node_type="writer" parent_index="183">    }</paragraph>
+ <paragraph index="204" node_type="writer" parent_index="183">}</paragraph>
+ <paragraph index="208" node_type="writer">Kết quả trên Docker Hub xác nhận mỗi lần commit sinh ra một image mang tag là commit SHA tương ứng (ví dụ yas-backoffice-bff:54b31bb). Khi tạo release v1.1.0, pipeline gắn thêm tag release cho chính image này. Việc hai tag 54b31bb và v1.1.0 có cùng Digest (68fe7ac8421e) cho thấy chúng cùng tham chiếu đến một Docker image, giúp dễ dàng truy vết giữa commit, release và artifact triển khai.</paragraph>
+ <paragraph index="209" node_type="writer">Hình 2: Image với tag là commit id của branch trên Docker Hub.</paragraph>
+ <paragraph index="210" node_type="writer">3.3. Xây dựng cluster K8S và triển khai YAS (Yêu cầu 1, 2)</paragraph>
+ <paragraph index="211" node_type="writer">Sau khi hạ tầng sẵn sàng, nhóm triển khai subset bằng script k8s/deploy/deploy-yas-subset.sh. Thứ tự cài đặt mang tính bắt buộc: chart yas-configuration (chứa toàn bộ ConfigMap và Secret) phải được cài đầu tiên, vì mọi service đều mount cấu hình từ đây; cài sai thứ tự khiến các pod khởi động lỗi.</paragraph>
+ <object index="212" name="Table4" object_type="table"/>
+ <paragraph index="214" node_type="writer" parent_index="212">helm upgrade --install yas-configuration ../charts/yas-configuration -n yas --create-namespace</paragraph>
+ <paragraph index="215" node_type="writer" parent_index="212"># sau đó: bffs + UIs + swagger, rồi 8 backend (cart customer inventory media order product search tax)</paragraph>
+ <paragraph index="219" node_type="writer">Nhóm xử lý một số vấn đề kỹ thuật phát sinh trong quá trình triển khai:</paragraph>
+ <paragraph index="220" node_type="writer">• Giới hạn RAM cho backend: cấu hình JVM mặc định chiếm ~25% RAM node, gây OOM. Nhóm áp đặt JAVA_TOOL_OPTIONS=-Xmx320m kèm resources.limits, qua đó loại bỏ hiện tượng OOM.</paragraph>
+ <paragraph index="221" node_type="writer">• Phân giải tên miền nội bộ (internal DNS): nhóm vá plugin hosts của CoreDNS để trỏ các domain YAS về ClusterIP của ingress controller, nhờ đó bff gọi được Keycloak qua identity.yas.local.com.</paragraph>
+ <paragraph index="222" node_type="writer">• Spring Cloud Gateway: chart dùng property path cũ (spring.cloud.gateway.routes), trong khi image mới đọc spring.cloud.gateway.server.webflux.routes; nhóm cập nhật lại trong yas-configuration để khôi phục định tuyến.</paragraph>
+ <paragraph index="223" node_type="writer">• Service search: Elasticsearch 8.8.1 không tương thích client 9.x (Spring Boot 4); nhóm nâng Elasticsearch lên 9.0.4, sau đó search index lại bình thường.</paragraph>
+ <paragraph index="224" node_type="writer">• Lưu trữ ảnh media: service media ghi file vào thư mục /images nhưng chart không khai báo volume. Nhóm bổ sung volume cho /images và thêm ingress route api.yas.local.com/media → media, nhờ đó storefront tải được ảnh sản phẩm.</paragraph>
+ <paragraph index="225" node_type="writer">• Kafka sau khi khởi động lại cluster: ZooKeeper kẹt vòng lặp leader-election khiến broker không kết nối được. Nhóm khởi động lại pod ZooKeeper để bầu leader sạch; broker và Debezium connect phục hồi, search index lại bình thường.</paragraph>
+ <paragraph index="226" node_type="writer">Để truy cập từ máy cá nhân (cluster không có DNS), nhóm thêm dòng sau vào file hosts trỏ domain về IP node, đồng thời nạp dữ liệu mẫu qua service sampledata:</paragraph>
+ <object index="227" name="Table5" object_type="table"/>
+ <paragraph index="229" node_type="writer" parent_index="227">192.168.49.2  storefront.yas.local.com backoffice.yas.local.com api.yas.local.com identity.yas.local.com</paragraph>
+ <paragraph index="234" node_type="writer">Hình 3: Toàn bộ pod của subset (14 service) ở trạng thái Running (kubectl get pods -n yas).</paragraph>
+ <paragraph index="236" node_type="writer">Hình 4: Giao diện Storefront: danh mục và danh sách sản phẩm (kèm hình ảnh).</paragraph>
+ <paragraph index="237" node_type="writer">3.3.1. Kiểm chứng từng service trong subset</paragraph>
+ <paragraph index="238" node_type="writer">Mọi service trong subset đều phải hoạt động. Bảng kiểm tra health (Hình 5) cho thấy 8 backend trả về status UP, các UI trả HTTP 200/302, service media phục vụ ảnh và sampledata đã nạp dữ liệu — xác nhận subset sẵn sàng phục vụ luồng nghiệp vụ:</paragraph>
+ <paragraph index="240" node_type="writer">Hình 5: Kiểm tra health 14 service trong namespace yas.</paragraph>
+ <paragraph index="241" node_type="writer">Các service được kiểm chứng trực quan qua hai giao diện: Storefront (người dùng) và Backoffice (quản trị):</paragraph>
+ <paragraph index="243" node_type="writer">Hình 6: Storefront — kết quả tìm kiếm &quot;iphone&quot; (service search + product + media).</paragraph>
+ <paragraph index="245" node_type="writer">Hình 7a: Storefront — trang chi tiết sản phẩm (service product, media).</paragraph>
+ <paragraph index="246" node_type="writer">Hình 7b: Storefront — trang chi tiết sản phẩm (service cart).</paragraph>
+ <paragraph index="248" node_type="writer">Hình 8: Backoffice — đăng nhập thành công bằng Keycloak SSO, trang tổng quan (service backoffice-bff/ui, product).</paragraph>
+ <paragraph index="250" node_type="writer">Hình 9: Backoffice — danh sách sản phẩm (service product).</paragraph>
+ <paragraph index="252" node_type="writer">Hình 10: Backoffice — quản lý khách hàng (service customer).</paragraph>
+ <paragraph index="254" node_type="writer">Hình 11: Backoffice — danh sách Warehouse (service inventory): kho “YAS Central Warehouse”. Tạo warehouse cần thêm service location (FK quốc gia/tỉnh/quận).</paragraph>
+ <paragraph index="256" node_type="writer">Hình 12: Backoffice — lớp thuế / tax classes (service tax).</paragraph>
+ <paragraph index="258" node_type="writer">Hình 13: Backoffice — danh sách đơn hàng (service order): 3 đơn với trạng thái, tổng tiền và thông tin liên hệ.</paragraph>
+ <paragraph index="259" node_type="writer">Service swagger-ui tổng hợp tài liệu API (OpenAPI 3.1) của các backend qua API gateway, cho phép kiểm tra hợp đồng API (API contract) tập trung:</paragraph>
+ <paragraph index="261" node_type="writer">Hình 14: Swagger UI — tài liệu API của service Product (OpenAPI 3.1).</paragraph>
+ <paragraph index="262" node_type="writer">3.4. Job developer_build và truy cập qua NodePort (Yêu cầu 4)</paragraph>
+ <paragraph index="263" node_type="writer">Job developer_build (file cd/developer-build.Jenkinsfile) cho phép developer chọn branch cần triển khai cho từng service qua parameter. Mặc định mọi service để main (giữ baseline); với service có branch khác main, pipeline phân giải commit SHA mới nhất của branch đó (git ls-remote) — trùng tag CI ở mục 3.2 — rồi helm upgrade service đó sang image thuonghong/yas-&lt;svc&gt;:&lt;sha&gt;.</paragraph>
+ <object index="264" name="Table6" object_type="table"/>
+ <paragraph index="266" node_type="writer" parent_index="264">def fullSha = sh(script: &quot;git ls-remote ${REPO_URL} refs/heads/${branch} | cut -f1&quot;,</paragraph>
+ <paragraph index="267" node_type="writer" parent_index="264">                 returnStdout: true).trim()</paragraph>
+ <paragraph index="268" node_type="writer" parent_index="264">def tag = fullSha.take(7)</paragraph>
+ <paragraph index="269" node_type="writer" parent_index="264">helm upgrade --install ${svc} k8s/charts/${svc} --namespace ${NAMESPACE} \</paragraph>
+ <paragraph index="270" node_type="writer" parent_index="264">  --set backend.service.type=NodePort \</paragraph>
+ <paragraph index="271" node_type="writer" parent_index="264">  --set backend.image.repository=thuonghong/yas-${svc} \</paragraph>
+ <paragraph index="272" node_type="writer" parent_index="264">  --set backend.image.tag=${tag} --wait --timeout 180s</paragraph>
+ <paragraph index="276" node_type="writer">Theo Yêu cầu 4, sau khi triển khai job cung cấp địa chỉ truy cập dạng domain:port qua NodePort. Pipeline truy vấn NodePort thực tế và IP node, rồi in ra dòng cần thêm vào file hosts cùng URL truy cập; do cluster không có DNS, developer tự trỏ domain về worker node (192.168.49.2).</paragraph>
+ <paragraph index="279" node_type="writer">
+Hình 15: Log job developer_build (terminal) — deploy 5 service (cart, order, product, search, tax) theo branch, in domain:port NodePort cho từng service.</paragraph>
+ <paragraph index="280" node_type="writer">Hình 16a: Form Build with Parameters của job developer_build — chọn branch deploy cho từng service, NAMESPACE, DOMAIN.</paragraph>
+ <paragraph index="281" node_type="writer">Hình 16b: Stages job developer_build #10 trên Jenkins — lấy NodePort và InternalIP của node, in URL truy cập domain:port.</paragraph>
+ <paragraph index="282" node_type="writer">3.5. Job xoá triển khai (Yêu cầu 5)</paragraph>
+ <paragraph index="283" node_type="writer">Job delete (file cd/delete.Jenkinsfile) gỡ bỏ các thành phần mà job developer_build đã triển khai. Job nhận tham số NAMESPACE, RELEASES (danh sách helm release cần gỡ) và tuỳ chọn xoá cả namespace. Mô tả của mỗi build chứa hyperlink trỏ về job developer_build (theo gợi ý đề), qua đó thoả yêu cầu liên kết tới job tạo.</paragraph>
+ <object index="284" name="Table7" object_type="table"/>
+ <paragraph index="286" node_type="writer" parent_index="284">helm uninstall ${release} --namespace ${NAMESPACE} --ignore-not-found</paragraph>
+ <paragraph index="287" node_type="writer" parent_index="284"># build description: Teardown of &lt;a href=&quot;...&quot;&gt;developer-build&lt;/a&gt; in ns yas</paragraph>
+ <paragraph index="292" node_type="writer">Hình 17: Log job delete gỡ release (release &quot;tax&quot; uninstalled) và xác minh helm list.</paragraph>
+ <paragraph index="294" node_type="writer">Hình 18a: Form Build with Parameters của job delete (tham số DEVELOPER_BUILD_JOB_URL); cột build bên trái hiển thị mô tả chứa hyperlink trỏ về job developer_build.</paragraph>
+ <paragraph index="295" node_type="writer">Hình 18b: Stages job delete #4 trên Jenkins — stage Verify: helm list + kubectl get pods (release tax đang Terminating); phần mô tả build có hyperlink ở đầu.</paragraph>
+ <paragraph index="296" node_type="writer">3.6. Nâng cao: Quản lý dev/staging bằng ArgoCD (2 điểm)</paragraph>
+ <paragraph index="297" node_type="writer">Thay cho Yêu cầu 6, nhóm sử dụng ArgoCD theo mô hình GitOps; cấu hình đặt trong thư mục cd/argocd:</paragraph>
+ <paragraph index="298" node_type="writer">• AppProject yas-cd: giới hạn nguồn (repo) và đích (cluster/namespace) được phép triển khai, nhằm kiểm soát phạm vi đồng bộ.</paragraph>
+ <paragraph index="299" node_type="writer">• dev-apps: các Application theo dõi branch main và bật automated sync — mỗi thay đổi trên main tự động được deploy vào namespace dev.</paragraph>
+ <paragraph index="300" node_type="writer">• staging-apps: theo dõi git tag release (v1.0.0), sync thủ công, triển khai image thuonghong/yas-&lt;svc&gt;:v1.0.0 vào namespace staging.</paragraph>
+ <paragraph index="301" node_type="writer">Theo đó: main → tự động cập nhật môi trường dev; tag release → triển khai staging. Mô hình này giữ đúng tinh thần Yêu cầu 6, đồng thời quản lý tập trung và khai báo (declarative) thông qua ArgoCD.</paragraph>
+ <paragraph index="303" node_type="writer">Hình 19: Danh sách Application trên ArgoCD: nhóm dev (Synced/Healthy) và staging (theo tag v1.0.0).</paragraph>
+ <paragraph index="305" node_type="writer">Hình 20: Chi tiết Application dev-product: Healthy, Synced tới main, Auto-sync enabled, cây tài nguyên triển khai.</paragraph>
+ <paragraph index="306" node_type="writer">3.7. Nâng cao: Service Mesh với Istio và Kiali (2 điểm)</paragraph>
+ <paragraph index="307" node_type="writer">Nhóm cài Istio và bật sidecar injection cho namespace yas. Cấu hình trong thư mục cd/istio gồm ba phần:</paragraph>
+ <paragraph index="308" node_type="writer">• PeerAuthentication (STRICT): bật mTLS bắt buộc giữa các service — mọi kết nối nội bộ đều được mã hoá và xác thực hai chiều (mutual TLS).</paragraph>
+ <paragraph index="309" node_type="writer">• AuthorizationPolicy: chỉ cho phép các service được chỉ định gọi nhau (chỉ service search được gọi product), dựa trên service-account principal.</paragraph>
+ <paragraph index="310" node_type="writer">• VirtualService: cấu hình retry tự động (3 lần) khi service đích trả về lỗi 5xx, qua đó tăng khả năng chịu lỗi.</paragraph>
+ <paragraph index="311" node_type="writer">Kịch bản kiểm thử (curl từ một pod sang service khác trong cluster) xác nhận: search → product trả về HTTP 200 (qua Envoy, mTLS hợp lệ, được authorization policy cho phép); cart → product trả về HTTP 403 (bị chặn). Header x-envoy-upstream-service-time trong phản hồi chứng tỏ lưu lượng đi qua sidecar Envoy, hàm ý chính sách mesh có hiệu lực ở tầng hạ tầng. Với chính sách retry, nhóm định tuyến tạm thời tax sang một nguồn lỗi 5xx tất định (httpbin /status/503): một lần gọi từ pod order sinh ra 4 lần thử ở upstream (1 lần gốc + 3 lần retry theo attempts:3), và sidecar phía client ghi nhận phản hồi 503 với cờ response_flags=URX (đã dùng hết số lần retry), xác nhận retry hoạt động ở tầng mesh mà không cần sửa mã ứng dụng.</paragraph>
+ <paragraph index="313" node_type="writer">Hình 21: Kiểm thử mesh trong cluster — (1) search→product trả 200 (qua Envoy sidecar, mTLS), (2) cart→product bị AuthorizationPolicy chặn 403, (3) tax retry: một lần gọi sinh 4 lần thử (1 gốc + 3 retry), client nhận 503 với response_flags=URX.</paragraph>
+ <paragraph index="315" node_type="writer">Hình 22: Topology các service trong namespace yas trên Kiali.</paragraph>
+ <paragraph index="317" node_type="writer">IV. Phụ lục</paragraph>
+ <paragraph index="318" node_type="writer">4.1. Thông tin nộp bài</paragraph>
+ <paragraph index="319" node_type="writer">Link Repository: https://github.com/ThuongHong/yas</paragraph>
+ <paragraph index="320" node_type="writer">Docker Hub: https://hub.docker.com/u/thuonghong (image dạng yas-&lt;service&gt;)</paragraph>
+ <paragraph index="321" node_type="writer">Mã nguồn CD: thư mục cd/ (developer-build.Jenkinsfile, delete.Jenkinsfile, argocd/, istio/), k8s/deploy/ (script triển khai), k8s/charts/ (Helm charts).</paragraph>
+ <paragraph index="322" node_type="writer">4.2. Quy trình thiết lập</paragraph>
+ <paragraph index="323" node_type="writer">Khởi tạo cluster và hạ tầng:</paragraph>
+ <object index="324" name="Table8" object_type="table"/>
+ <paragraph index="326" node_type="writer" parent_index="324">minikube start --nodes 1 --memory 11000 --disk-size 40000 --cpus 4</paragraph>
+ <paragraph index="327" node_type="writer" parent_index="324">minikube addons enable ingress</paragraph>
+ <paragraph index="328" node_type="writer" parent_index="324">cd k8s/deploy &amp;&amp; ./setup-cluster-min.sh      # postgres, kafka, elasticsearch, keycloak, redis</paragraph>
+ <paragraph index="329" node_type="writer" parent_index="324">./deploy-yas-subset.sh                        # yas-configuration + 14 service</paragraph>
+ <paragraph index="333" node_type="writer">Nhóm cấu hình các credential sau trong Jenkins:</paragraph>
+ <paragraph index="334" node_type="writer">• dockerhub-creds: Username + Access Token Docker Hub (push image).</paragraph>
+ <paragraph index="335" node_type="writer">• minikube-kubeconfig: Secret file chứa kubeconfig trỏ tới Minikube (job developer_build, delete).</paragraph>
+ <paragraph index="336" node_type="writer">• github-token: kết nối Jenkins với GitHub (checkout, build checks).</paragraph>
+ <paragraph index="337" node_type="writer">Nhóm tạo hai Pipeline job (developer_build, delete), mỗi job trỏ tới Jenkinsfile tương ứng trong thư mục cd/.</paragraph>
+ <paragraph index="338" node_type="writer">4.3. Lưu ý về tài nguyên khi demo</paragraph>
+ <paragraph index="339" node_type="writer">Do giới hạn 15GB RAM, nhóm không thể chạy đồng thời toàn bộ subset cùng Istio và ArgoCD. Theo đó, mỗi yêu cầu được demo với tập service tối thiểu rồi tear down để giải phóng RAM cho phần kế tiếp. Riêng Service Mesh (mTLS STRICT) chặn truy cập plaintext qua NodePort từ bên ngoài; khi demo NodePort, nhóm tạm chuyển mTLS sang PERMISSIVE hoặc tách sang namespace không bật Istio.</paragraph>
+ <paragraph index="340" node_type="writer">4.4. Tái lập các phase demo</paragraph>
+ <paragraph index="341" node_type="writer">Do giới hạn 15GB RAM, nhóm tổ chức phần trình diễn thành các phase tuần tự: mỗi phase chỉ nạp tập service tối thiểu rồi tear down trước khi chuyển sang phase kế, nhằm giữ tổng mức tiêu thụ RAM trong ngưỡng cho phép. Các lệnh dưới đây cho phép tái lập đầy đủ từng phase; chúng giả định Phase 0 (cluster và hạ tầng) đã sẵn sàng.</paragraph>
+ <paragraph index="342" node_type="writer">4.4.1. Phase 0 — Khởi tạo cluster và hạ tầng (một lần)</paragraph>
+ <paragraph index="343" node_type="writer">Nhóm khởi tạo Minikube single-node và cài hạ tầng dùng chung (PostgreSQL, Kafka, Elasticsearch, Keycloak, Redis), sau đó trỏ các domain YAS về IP node:</paragraph>
+ <object index="344" name="Table9" object_type="table"/>
+ <paragraph index="346" node_type="writer" parent_index="344">minikube start --nodes 1 --memory 11000 --cpus 4 --disk-size 40000</paragraph>
+ <paragraph index="347" node_type="writer" parent_index="344">minikube addons enable ingress</paragraph>
+ <paragraph index="348" node_type="writer" parent_index="344">cd k8s/deploy &amp;&amp; ./setup-cluster-min.sh   # postgres, kafka(Strimzi 0.45.2), ES(ECK), keycloak, redis</paragraph>
+ <paragraph index="349" node_type="writer" parent_index="344">echo &quot;$(minikube ip)  identity.yas.local.com backoffice.yas.local.com \</paragraph>
+ <paragraph index="350" node_type="writer" parent_index="344">  storefront.yas.local.com api.yas.local.com&quot; | sudo tee -a /etc/hosts</paragraph>
+ <paragraph index="354" node_type="writer">4.4.2. Phase 1 — Triển khai subset 14 service (Yêu cầu 1, 2)</paragraph>
+ <paragraph index="355" node_type="writer">Nếu trước đó đã chạy ArgoCD hoặc Istio, nhóm giải phóng RAM và gỡ Service Mesh khỏi namespace yas trước khi triển khai subset:</paragraph>
+ <object index="356" name="Table10" object_type="table"/>
+ <paragraph index="358" node_type="writer" parent_index="356">kubectl scale deploy,statefulset -n argocd --all --replicas=0</paragraph>
+ <paragraph index="359" node_type="writer" parent_index="356">kubectl scale deploy -n istio-system --all --replicas=0</paragraph>
+ <paragraph index="360" node_type="writer" parent_index="356">kubectl label ns yas istio-injection- --overwrite</paragraph>
+ <paragraph index="361" node_type="writer" parent_index="356">kubectl delete peerauthentication,authorizationpolicy,virtualservice --all -n yas --ignore-not-found</paragraph>
+ <paragraph index="365" node_type="writer">Tiếp theo, nhóm triển khai subset bằng script; chart yas-configuration được cài đầu tiên để các service mount được ConfigMap/Secret:</paragraph>
+ <object index="366" name="Table11" object_type="table"/>
+ <paragraph index="368" node_type="writer" parent_index="366">cd k8s/deploy &amp;&amp; ./deploy-yas-subset.sh</paragraph>
+ <paragraph index="369" node_type="writer" parent_index="366">kubectl get pods -n yas -w        # chờ 15 pod đạt 1/1 Running</paragraph>
+ <paragraph index="373" node_type="writer">Để toàn bộ luồng nghiệp vụ hoạt động, nhóm thực hiện thêm các bước cấu hình: bổ sung volume cho /images và ingress route /media (hiển thị ảnh sản phẩm); nạp dữ liệu mẫu qua service sampledata; nếu search rỗng do Kafka, khởi động lại lần lượt pod ZooKeeper → broker → Debezium connect để bầu leader sạch; đặt mật khẩu cho user admin của realm Yas (đăng nhập Backoffice); nâng swagger-ui lên v5.17.14 để render OpenAPI 3.1. Chi tiết lệnh từng bước nằm ở docs/screenshot-runbook.md (mục 1.3–1.6).</paragraph>
+ <paragraph index="374" node_type="writer">4.4.3. Phase CI và job developer_build / delete (Yêu cầu 3, 4, 5)</paragraph>
+ <paragraph index="375" node_type="writer">Phần này thao tác trên giao diện Jenkins, không cần thay đổi tập service đang chạy:</paragraph>
+ <paragraph index="376" node_type="writer">• CI (Yêu cầu 3): commit lên một branch → pipeline build image tag = commit id và push Docker Hub (mục 3.2).</paragraph>
+ <paragraph index="377" node_type="writer">• developer_build (Yêu cầu 4): Jenkins → yas-developer-build → Build with Parameters (ví dụ tax = dev-tax-service) → log in ra dòng /etc/hosts và URL domain:port NodePort. Thêm dòng hosts theo log rồi truy cập http://tax.yas.local.com:&lt;nodePort&gt;.</paragraph>
+ <paragraph index="378" node_type="writer">• delete (Yêu cầu 5): Jenkins → yas-delete (RELEASES=tax, DEVELOPER_BUILD_JOB_URL = URL job developer_build) → log “release “tax” uninstalled”; mô tả build chứa hyperlink trỏ về job tạo.</paragraph>
+ <paragraph index="379" node_type="writer">Lưu ý: khi mesh STRICT đang bật ở namespace yas, truy cập NodePort dạng plaintext từ ngoài bị chặn. Do đó nhóm demo NodePort ở phase chưa bật Istio (Phase 1), hoặc tạm chuyển PeerAuthentication sang PERMISSIVE rồi khôi phục STRICT.</paragraph>
+ <paragraph index="380" node_type="writer">4.4.4. Phase 2 — ArgoCD (GitOps, Nâng cao)</paragraph>
+ <paragraph index="381" node_type="writer">Nhóm tear down subset để giải phóng RAM, sau đó bật ArgoCD và quan sát trạng thái đồng bộ:</paragraph>
+ <object index="382" name="Table12" object_type="table"/>
+ <paragraph index="384" node_type="writer" parent_index="382">kubectl scale deploy -n yas --all --replicas=0          # tear down subset</paragraph>
+ <paragraph index="385" node_type="writer" parent_index="382">kubectl scale deploy,statefulset -n argocd --all --replicas=1</paragraph>
+ <paragraph index="386" node_type="writer" parent_index="382">until kubectl get deploy -n argocd argocd-server \</paragraph>
+ <paragraph index="387" node_type="writer" parent_index="382">  -o jsonpath='{.status.readyReplicas}' | grep -q 1; do sleep 5; done</paragraph>
+ <paragraph index="388" node_type="writer" parent_index="382">kubectl get applications -n argocd     # dev-* Synced/Healthy</paragraph>
+ <paragraph index="392" node_type="writer">Các Application dev-* tự động sync theo branch main. Để kích hoạt môi trường staging, nhóm đẩy git tag release rồi sync các Application staging-*:</paragraph>
+ <object index="393" name="Table13" object_type="table"/>
+ <paragraph index="395" node_type="writer" parent_index="393">git tag v1.0.0 &amp;&amp; git push origin v1.0.0</paragraph>
+ <paragraph index="396" node_type="writer" parent_index="393"># ArgoCD → Sync các app staging-* (image thuonghong/yas-&lt;svc&gt;:v1.0.0)</paragraph>
+ <paragraph index="400" node_type="writer">4.4.5. Phase 3 — Istio + Kiali (Service Mesh, Nâng cao)</paragraph>
+ <paragraph index="401" node_type="writer">Nhóm tắt ArgoCD, bật Istio, gắn nhãn sidecar injection cho namespace yas rồi áp dụng các policy của mesh:</paragraph>
+ <object index="402" name="Table14" object_type="table"/>
+ <paragraph index="404" node_type="writer" parent_index="402">kubectl scale deploy,statefulset -n argocd --all --replicas=0</paragraph>
+ <paragraph index="405" node_type="writer" parent_index="402">kubectl scale deploy -n istio-system --all --replicas=1</paragraph>
+ <paragraph index="406" node_type="writer" parent_index="402">kubectl label ns yas istio-injection=enabled --overwrite</paragraph>
+ <paragraph index="407" node_type="writer" parent_index="402">kubectl apply -f cd/istio/   # PeerAuthentication STRICT + AuthorizationPolicy + VirtualService</paragraph>
+ <paragraph index="408" node_type="writer" parent_index="402">kubectl scale deploy product search cart tax -n yas --replicas=1</paragraph>
+ <paragraph index="409" node_type="writer" parent_index="402">kubectl rollout restart deploy product search cart tax -n yas   # inject sidecar -&gt; 2/2</paragraph>
+ <paragraph index="413" node_type="writer">Nhóm kiểm chứng chính sách mesh bằng curl nội cluster: kết nối được phép trả HTTP 200 (kèm header x-envoy-upstream-service-time), kết nối bị chặn trả HTTP 403:</paragraph>
+ <object index="414" name="Table15" object_type="table"/>
+ <paragraph index="416" node_type="writer" parent_index="414">kubectl exec -n yas deploy/search -c search -- wget -qO- -S http://product:8090/actuator/health  # 200</paragraph>
+ <paragraph index="417" node_type="writer" parent_index="414">kubectl exec -n yas deploy/cart   -c cart   -- wget -qO- -S http://product:8090/actuator/health  # 403 (RBAC)</paragraph>
+ <paragraph index="421" node_type="writer">Để khôi phục về Phase 1, nhóm gỡ nhãn injection và xoá các custom resource của Istio như ở mục 4.4.2.</paragraph>
+</indexing>
